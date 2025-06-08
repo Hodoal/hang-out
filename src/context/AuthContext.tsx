@@ -256,7 +256,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         updateUserProfileImage, // Added
       }}
     >
-      {children}
+      <React.Fragment>{children}</React.Fragment>
     </AuthContext.Provider>
   );
 };
