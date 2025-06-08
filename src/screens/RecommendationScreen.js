@@ -18,16 +18,30 @@ const RecommendationScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // TODO: Future: Consider if other preferences (categories, priceRange, ambiance)
+    // should also trigger a re-fetch or be included in the getRecommendationsByMood call.
+    // If so, add them to the dependency array and pass to the service.
     fetchRecommendations();
-  }, [preferences.mood]);
+  }, [preferences.mood, preferences.categories, preferences.ambiance, preferences.priceRange, userId]); // Added other relevant preferences and userId
 
   const fetchRecommendations = async () => {
     setLoading(true);
     try {
-      // Obtener recomendaciones basadas en el estado de ánimo
+      // TODO: Future: Enhance PlacesService.getRecommendationsByMood to accept
+      // an object with all relevant preferences (mood, categories, priceRange, ambiance)
+      // for more tailored recommendations.
+      // For now, it primarily uses mood.
       const recommendedPlaces = await PlacesService.getRecommendationsByMood(
-        preferences.mood,
+        preferences.mood, // Current primary filter
         userId
+        // Example of passing more:
+        // {
+        //   mood: preferences.mood,
+        //   categories: preferences.categories,
+        //   priceRange: preferences.priceRange,
+        //   ambiance: preferences.ambiance
+        // },
+        // userId
       );
       setRecommendations(recommendedPlaces);
     } catch (error) {

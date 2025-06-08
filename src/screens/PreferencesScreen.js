@@ -8,212 +8,156 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AntDesign } from '@expo/vector-icons';
+// import axios from 'axios'; // Will be removed
+// import AsyncStorage from '@react-native-async-storage/async-storage'; // Will be removed for user data
+import { AntDesign } from '@expo/vector-icons'; // Keep for icons if still used
+import { Button as ElementsButton, CheckBox, Card, Divider } from 'react-native-elements'; // For new UI elements
 
-const API_URL = 'http://your-backend-url.com/api'; // Reemplazar con tu URL real
+import { useAuth } from '../context/AuthContext';
+import PlacesContext from '../context/PlacesContext';
 
-const moods = [
-  { id: 'relaxed', label: 'Relajado', icon: 'customerservice' },
-  { id: 'adventurous', label: 'Aventurero', icon: 'rocket1' },
-  { id: 'romantic', label: 'Romántico', icon: 'heart' },
-  { id: 'cultural', label: 'Cultural', icon: 'book' },
-  { id: 'party', label: 'Fiestero', icon: 'star' },
-  { id: 'foodie', label: 'Gourmet', icon: 'coffee' },
-  { id: 'nature', label: 'Amante de la naturaleza', icon: 'tree' },
-  { id: 'shopping', label: 'Compras', icon: 'shoppingcart' },
+// const API_URL = 'http://your-backend-url.com/api'; // Will be removed
+
+// Define new preference options as per subtask
+const ALL_CATEGORIES = [ // Replaces placeTypes, or adapt placeTypes
+  "Restaurants", "Cafes", "Parks", "Museums", "Nightlife", "Shopping", "Fitness", "Spas"
 ];
+const ALL_AMBIANCES = ["Quiet", "Lively", "Casual", "Formal", "Cozy", "Modern"];
+const ALL_PRICE_RANGES = ["$", "$$", "$$$", "$$$$"];
 
-const placeTypes = [
-  { id: 'restaurants', label: 'Restaurantes' },
-  { id: 'museums', label: 'Museos' },
-  { id: 'parks', label: 'Parques' },
-  { id: 'bars', label: 'Bares' },
-  { id: 'beaches', label: 'Playas' },
-  { id: 'historical', label: 'Sitios históricos' },
-  { id: 'shopping', label: 'Centros comerciales' },
-  { id: 'entertainment', label: 'Entretenimiento' },
-];
+// Original placeTypes and moods constants are no longer needed with the new UI structure.
 
 const PreferencesSetupScreen = ({ navigation }) => {
-  const [selectedMoods, setSelectedMoods] = useState([]);
-  const [selectedPlaceTypes, setSelectedPlaceTypes] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const { userId, updatePreferencesStatus, userName } = useAuth(); // Get userId and update function
+  const { preferences: currentGlobalPreferences, setPreferences: setGlobalPreferences } = useContext(PlacesContext);
 
-  const toggleMood = (moodId) => {
-    if (selectedMoods.includes(moodId)) {
-      setSelectedMoods(selectedMoods.filter((id) => id !== moodId));
-    } else {
-      // Limitar a máximo 3 estados de ánimo
-      if (selectedMoods.length < 3) {
-        setSelectedMoods([...selectedMoods, moodId]);
-      } else {
-        Alert.alert(
-          'Límite alcanzado',
-          'Puedes seleccionar hasta 3 estados de ánimo'
-        );
-      }
+  // States for user selections based on new definitions
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedAmbiance, setSelectedAmbiance] = useState(null); // Single select for ambiance
+  const [selectedPriceRange, setSelectedPriceRange] = useState(null); // Single select for price
+
+  const [isLoading, setIsLoading] = useState(false); // Local loading state for save operation
+
+  // Initialize state with existing global preferences from PlacesContext
+  useEffect(() => {
+    if (currentGlobalPreferences) {
+      setSelectedCategories(currentGlobalPreferences.categories || []);
+      setSelectedAmbiance(currentGlobalPreferences.ambiance || null);
+      setSelectedPriceRange(currentGlobalPreferences.priceRange || null);
     }
+  }, [currentGlobalPreferences]);
+
+  // Removed old toggleMood and togglePlaceType functions as they are replaced by
+  // direct state updates or specific handlers like toggleCategory.
+
+  const toggleCategory = (category) => {
+    setSelectedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(item => item !== category)
+        : [...prev, category]
+    );
   };
 
-  const togglePlaceType = (placeTypeId) => {
-    if (selectedPlaceTypes.includes(placeTypeId)) {
-      setSelectedPlaceTypes(
-        selectedPlaceTypes.filter((id) => id !== placeTypeId)
-      );
-    } else {
-      // Limitar a máximo 5 tipos de lugares
-      if (selectedPlaceTypes.length < 5) {
-        setSelectedPlaceTypes([...selectedPlaceTypes, placeTypeId]);
-      } else {
-        Alert.alert(
-          'Límite alcanzado',
-          'Puedes seleccionar hasta 5 tipos de lugares'
-        );
-      }
-    }
-  };
-
-  const savePreferences = async () => {
-    if (selectedMoods.length === 0 || selectedPlaceTypes.length === 0) {
-      Alert.alert(
-        'Selección incompleta',
-        'Por favor selecciona al menos un estado de ánimo y un tipo de lugar'
-      );
+  // Save preferences to PlacesContext and update AuthContext status
+  const handleSavePreferences = async () => {
+    if (!userId) {
+      Alert.alert("Error", "User not identified. Please re-login.");
       return;
     }
+    if (selectedCategories.length === 0) {
+       Alert.alert("Incomplete", "Please select at least one category.");
+       return;
+    }
+    // Ambiance and Price Range can be optional
 
-    setLoading(true);
-
+    setIsLoading(true);
     try {
-      // Obtener token y datos del usuario
-      const token = await AsyncStorage.getItem('userToken');
-      const userData = JSON.parse(await AsyncStorage.getItem('userData'));
+      // Update PlacesContext
+      setGlobalPreferences({
+        ...currentGlobalPreferences, // Preserve other preferences like mood, location
+        categories: selectedCategories,
+        ambiance: selectedAmbiance,
+        priceRange: selectedPriceRange,
+      });
 
-      // Enviar preferencias al backend
-      const response = await axios.post(
-        `${API_URL}/users/${userData.id}/preferences`,
-        {
-          moods: selectedMoods,
-          placeTypes: selectedPlaceTypes,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      // Mark preferences as completed in AuthContext
+      await updatePreferencesStatus(userId, true);
 
-      // Actualizar datos del usuario en AsyncStorage
-      await AsyncStorage.setItem(
-        'userData',
-        JSON.stringify({
-          ...userData,
-          hasCompletedPreferences: true,
-          preferences: response.data.preferences,
-        })
-      );
-
-      // Navegar a la pantalla principal
-      navigation.replace('Home');
+      // Navigation to HomeScreen will be handled by MainNavigator
+      // Alert.alert("Preferences Saved", "Your preferences have been updated!");
     } catch (error) {
-      console.error('Error al guardar preferencias:', error);
-      Alert.alert(
-        'Error',
-        error.response?.data?.message ||
-          'Ocurrió un error al guardar tus preferencias'
-      );
+      console.error("Failed to save preferences or update status:", error);
+      Alert.alert("Error", `Failed to save preferences: ${error.message}`);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
+
+  // Helper function to render sections, similar to the planned PreferencesScreen
+  const renderSection = (title, items, selectedState, toggleFunction, multiSelect = true, ItemComponent = CheckBox, itemProps = {}) => (
+    <Card containerStyle={styles.card}>
+      <Card.Title style={styles.cardTitle}>{title}</Card.Title>
+      <Card.Divider />
+      <View style={styles.optionsContainer}>
+        {items.map((item) => (
+          <ItemComponent
+            key={item}
+            title={item}
+            checked={multiSelect ? selectedState.includes(item) : selectedState === item}
+            onPress={() => toggleFunction(item)}
+            containerStyle={styles.checkboxContainer}
+            textStyle={styles.checkboxText}
+            checkedIcon="check-square-o" // Example, works for CheckBox
+            uncheckedIcon="square-o"     // Example, works for CheckBox
+            checkedColor="#4C68D7"        // Example, works for CheckBox
+            {...itemProps}
+          />
+        ))}
+      </View>
+    </Card>
+  );
+
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Tus Preferencias</Text>
+        <Text style={styles.title}>Set Your Preferences {userName ? `for ${userName}` : ''}</Text>
         <Text style={styles.subtitle}>
-          Personaliza tu experiencia para recibir recomendaciones según tu
-          estado de ánimo
+          Help us tailor recommendations for you.
         </Text>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          ¿Qué estados de ánimo te describen mejor?
-        </Text>
-        <Text style={styles.sectionSubtitle}>Selecciona hasta 3 opciones</Text>
+      {renderSection("Favorite Categories", ALL_CATEGORIES, selectedCategories, toggleCategory, true, CheckBox)}
 
-        <View style={styles.optionsGrid}>
-          {moods.map((mood) => (
-            <TouchableOpacity
-              key={mood.id}
-              style={[
-                styles.optionCard,
-                selectedMoods.includes(mood.id) && styles.selectedOption,
-              ]}
-              onPress={() => toggleMood(mood.id)}
-            >
-              <AntDesign
-                name={mood.icon}
-                size={24}
-                color={selectedMoods.includes(mood.id) ? '#fff' : '#4C68D7'}
-              />
-              <Text
-                style={[
-                  styles.optionText,
-                  selectedMoods.includes(mood.id) && styles.selectedOptionText,
-                ]}
-              >
-                {mood.label}
-              </Text>
-            </TouchableOpacity>
+      {renderSection("Preferred Ambiance", ALL_AMBIANCES, selectedAmbiance, setSelectedAmbiance, false, CheckBox)}
+
+      <Card containerStyle={styles.card}>
+        <Card.Title style={styles.cardTitle}>Price Range</Card.Title>
+        <Card.Divider />
+        <View style={styles.optionsContainer_row}>
+          {ALL_PRICE_RANGES.map((range) => (
+            <ElementsButton
+              key={range}
+              title={range}
+              type={selectedPriceRange === range ? "solid" : "outline"}
+              onPress={() => setSelectedPriceRange(range)}
+              buttonStyle={styles.priceButton}
+              titleStyle={selectedPriceRange === range ? styles.priceButtonText_selected : styles.priceButtonText}
+              containerStyle={styles.priceButtonContainer}
+            />
           ))}
         </View>
-      </View>
+      </Card>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          ¿Qué lugares te gustaría visitar?
-        </Text>
-        <Text style={styles.sectionSubtitle}>Selecciona hasta 5 opciones</Text>
-
-        <View style={styles.optionsGrid}>
-          {placeTypes.map((place) => (
-            <TouchableOpacity
-              key={place.id}
-              style={[
-                styles.optionCard,
-                selectedPlaceTypes.includes(place.id) && styles.selectedOption,
-              ]}
-              onPress={() => togglePlaceType(place.id)}
-            >
-              <Text
-                style={[
-                  styles.optionText,
-                  selectedPlaceTypes.includes(place.id) &&
-                    styles.selectedOptionText,
-                ]}
-              >
-                {place.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      <TouchableOpacity
-        style={styles.saveButton}
-        onPress={savePreferences}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.saveButtonText}>Guardar Preferencias</Text>
-        )}
-      </TouchableOpacity>
+      <ElementsButton
+        title="Save Preferences"
+        onPress={handleSavePreferences}
+        buttonStyle={styles.saveButton}
+        titleStyle={styles.saveButtonText}
+        icon={{ name: 'save', type: 'font-awesome', color: 'white', size:18, marginRight:10 }}
+        loading={isLoading}
+        disabled={isLoading}
+      />
     </ScrollView>
   );
 };
@@ -221,85 +165,99 @@ const PreferencesSetupScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f4f6f8', // Lightened background
   },
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 30,
+    padding: 20,
+    paddingTop: Platform.OS === 'ios' ? 50 : 30, // Adjust paddingTop for iOS status bar
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+    alignItems: 'center',
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 10,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
     color: '#666',
-    lineHeight: 22,
+    marginTop: 8, // Increased margin
+    textAlign: 'center',
   },
-  section: {
-    backgroundColor: '#fff',
-    borderRadius: 15,
-    padding: 20,
-    marginHorizontal: 20,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  card: {
+    borderRadius: 10,
+    marginHorizontal: 15,
+    marginTop: 15,
+    paddingBottom: 10, // Adjusted padding
+    shadowColor: "#000", // Added shadow for cards
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.20,
+    shadowRadius: 1.41,
+    elevation: 2,
   },
-  sectionTitle: {
+  cardTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 5,
+    fontWeight: '600',
+    color: '#4C68D7', // Primary color for titles
+    textAlign: 'left', // Align title to left
+    marginBottom: 10, // Add margin to title
   },
-  sectionSubtitle: {
-    fontSize: 14,
-    color: '#888',
-    marginBottom: 15,
+  optionsContainer: { // For Checkboxes
+    flexDirection: 'column',
   },
-  optionsGrid: {
+  optionsContainer_row: { // For Price Buttons
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around', // Better distribution
+    marginTop: 5, // Reduced margin
   },
-  optionCard: {
-    width: '48%',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
+  checkboxContainer: {
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    marginLeft: 0,
+    marginRight: 0,
+    paddingVertical: 6, // Reduced padding
   },
-  selectedOption: {
-    backgroundColor: '#4C68D7',
+  checkboxText: {
+    fontSize: 16,
+    fontWeight: 'normal',
+    color: '#333', // Darker text for better readability
   },
-  optionText: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: '#333',
+  priceButtonContainer: {
+    marginHorizontal: 4, // Reduced margin
+    marginBottom:10,
+    flexGrow: 1, // Allow buttons to grow
+    minWidth: '20%', // Ensure buttons don't get too small
   },
-  selectedOptionText: {
-    color: '#fff',
+  priceButton: {
+    paddingHorizontal: 10, // Adjusted padding
+    borderRadius: 20, // More rounded
+    borderWidth: 1.5, // Thicker border for outline
+  },
+  priceButtonText: {
+     // Default color comes from button type 'outline'
+  },
+  priceButtonText_selected: {
+    // Default color comes from button type 'solid'
   },
   saveButton: {
-    backgroundColor: '#4C68D7',
-    borderRadius: 10,
-    padding: 15,
-    alignItems: 'center',
-    marginVertical: 30,
+    backgroundColor: '#5cb85c', // Green color for save
+    borderRadius: 8,
     marginHorizontal: 20,
+    marginTop: 30,
+    marginBottom: 40, // More space at the bottom
+    paddingVertical: 15,
   },
   saveButtonText: {
-    color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
+    color: '#fff', // Ensure text is white
   },
 });
 

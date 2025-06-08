@@ -16,12 +16,20 @@ const HomeScreen = ({ navigation }) => {
   const [loading, setLoading] = React.useState(false);
 
   useEffect(() => {
+    // TODO: Future: Modify fetchInitialPlaces to use preferences from PlacesContext
+    // (e.g., preferences.categories, preferences.priceRange) to filter popular places.
+    // This might involve changes to PlacesService.getPopularPlaces or client-side filtering.
     fetchInitialPlaces();
-  }, []);
+  }, [preferences]); // Re-fetch if preferences change, or handle filtering differently
 
   const fetchInitialPlaces = async () => {
     setLoading(true);
     try {
+      // Example: If PlacesService is updated:
+      // const placesData = await PlacesService.getPopularPlaces({
+      //   categories: preferences.categories,
+      //   price: preferences.priceRange
+      // });
       const placesData = await PlacesService.getPopularPlaces();
       setPlaces(placesData);
     } catch (error) {
@@ -32,9 +40,16 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const handleSearch = async () => {
+    // TODO: Future: Modify handleSearch to incorporate preferences from PlacesContext
+    // into the search query or filter results.
+    // E.g., pass preferences to PlacesService.searchPlaces if the service supports it.
     if (search.trim()) {
       setLoading(true);
       try {
+        // Example: If PlacesService is updated:
+        // const searchResults = await PlacesService.searchPlaces(search, {
+        //   categories: preferences.categories
+        // });
         const searchResults = await PlacesService.searchPlaces(search);
         setPlaces(searchResults);
       } catch (error) {
@@ -49,7 +64,7 @@ const HomeScreen = ({ navigation }) => {
     <TouchableOpacity
       onPress={() => navigation.navigate('PlaceDetail', { placeId: item.id })}
     >
-      <Card>
+      <Card containerStyle={styles.cardItem}>
         <Card.Title>{item.name}</Card.Title>
         <Card.Divider />
         <Card.Image source={{ uri: item.imageUrl }} />
@@ -114,6 +129,13 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingBottom: 80,
+  },
+  cardItem: { // New style for individual cards
+    borderRadius: 10,
+    overflow: 'hidden', // Important for Card.Image to respect borderRadius
+    marginHorizontal: 5, // Adjust horizontal margin if needed
+    marginBottom: 10, // Add some space between cards
+    padding: 10, // Adjust padding if default is too much/little after borderRadius
   },
   moodButton: {
     backgroundColor: '#ff6b6b',
