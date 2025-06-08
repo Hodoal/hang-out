@@ -7,6 +7,7 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Platform, // Added Platform import
 } from 'react-native';
 // import axios from 'axios'; // Will be removed
 // import AsyncStorage from '@react-native-async-storage/async-storage'; // Will be removed for user data
