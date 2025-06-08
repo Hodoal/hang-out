@@ -35,12 +35,12 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [token, setToken] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [userProfileImageUrl, setUserProfileImageUrl] = useState<string | null>(null); // Added for profile image
+  const [userProfileImageUrl, setUserProfileImageUrl] = useState<string | null>(null);
   const [hasCompletedPreferences, setHasCompletedPreferences] = useState<boolean | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
