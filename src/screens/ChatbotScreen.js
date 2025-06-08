@@ -15,6 +15,7 @@ import {
   Linking,
   Alert,
 } from 'react-native';
+import Markdown from "react-native-markdown-display";
 import { LinearGradient } from 'expo-linear-gradient';
 
 // APIs Configuration
@@ -32,7 +33,7 @@ const ChatbotBarranquilla = () => {
   const [messages, setMessages] = useState([
     {
       id: '0',
-      text: '¡Hola! Soy tu guía turístico personal de Barranquilla 🌴\n\nCuéntame cómo te sientes hoy o qué tipo de experiencia buscas, y te recomendaré los mejores lugares de nuestra hermosa ciudad. ¡Empecemos!',
+      text: "¡Hola! Soy tu **guía turístico personal** de Barranquilla 🌴\n\nCuéntame cómo te sientes hoy o qué tipo de experiencia buscas, y te recomendaré los mejores lugares de nuestra hermosa ciudad. \n\nPor ejemplo, puedes decir:\n* _'Quiero algo relajante'_\n* _'Busco aventura'_\n* _'Necesito un buen restaurante'_\n\n¡Empecemos!",
       sender: 'bot',
       timestamp: new Date(),
     },
@@ -49,6 +50,20 @@ const ChatbotBarranquilla = () => {
   const [awaitingRating, setAwaitingRating] = useState(null);
 
   const flatListRef = useRef(null);
+
+  const markdownStyle = {
+    body: { color: '#ffffff', fontSize: 16 }, // Matches botText color and approximate size
+    heading1: { fontSize: 22, fontWeight: 'bold', color: '#ffffff', marginVertical: 5 },
+    heading2: { fontSize: 20, fontWeight: 'bold', color: '#ffffff', marginVertical: 4 },
+    strong: { fontWeight: 'bold', color: '#ffffff' },
+    em: { fontStyle: 'italic', color: '#ffffff' },
+    bullet_list: { color: '#ffffff' },
+    ordered_list: { color: '#ffffff' },
+    list_item: { marginVertical: 2, color: '#ffffff' },
+    link: { color: '#E0F7FA', textDecorationLine: 'underline' }, // A slightly different color for links
+    text: { color: '#ffffff' }, // Default text color within markdown
+    paragraph: { marginTop: 5, marginBottom: 5, color: '#ffffff' }
+  };
 
   useEffect(() => {
     // Scroll to bottom whenever messages change
@@ -468,14 +483,15 @@ Responde SOLO con JSON válido, sin texto adicional.`;
             isBot ? styles.botBubble : styles.userBubble,
           ]}
         >
-          <Text
-            style={[
-              styles.messageText,
-              isBot ? styles.botText : styles.userText,
-            ]}
-          >
-            {item.text}
-          </Text>
+          {isBot ? (
+            <Markdown style={markdownStyle}>
+              {item.text}
+            </Markdown>
+          ) : (
+            <Text style={[styles.messageText, styles.userText]}>
+              {item.text}
+            </Text>
+          )}
 
           {/* Mostrar imagen y botón de mapa si hay información del lugar */}
           {item.placeInfo && (
