@@ -20,7 +20,7 @@ import Markdown from "react-native-markdown-display";
 import Icon from "react-native-vector-icons/Ionicons";
 
 // APIs Configuration
-const OPENROUTER_API_KEY ='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';
+const OPENROUTER_API_KEY ='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';
 const GOOGLE_MAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY'; // Reemplazar con tu API key
 const NLP_SERVER_URL = 'http://localhost:6000'; // Updated port for Flask NLP service
 const SITE_URL = 'barranquilla-guide.com';
