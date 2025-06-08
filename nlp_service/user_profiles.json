@@ -11,23 +11,35 @@
         "mood": "aventurero",
         "confidence": 0.21552351972093312,
         "timestamp": "2025-06-08T11:48:32.089311"
+      },
+      {
+        "mood": "energetico",
+        "confidence": 0.6521882345611735,
+        "timestamp": "2025-06-08T12:00:25.693657"
+      },
+      {
+        "mood": "aventurero",
+        "confidence": 0.21552351972093312,
+        "timestamp": "2025-06-08T12:02:04.977916"
+      },
+      {
+        "mood": "aventurero",
+        "confidence": 0.21552351972093312,
+        "timestamp": "2025-06-08T12:03:13.241204"
+      },
+      {
+        "mood": "relajado",
+        "confidence": 0.19753706185629477,
+        "timestamp": "2025-06-08T12:04:49.359878"
       }
     ],
     "location_ratings": {},
-    "conversation_count": 2,
+    "conversation_count": 6,
     "avg_rating": 0.0,
     "favorite_categories": [
       "comer"
     ],
     "last_interactions": [
-      {
-        "message": "Hola, quiero un lugar para bailar ",
-        "mood": "relajado",
-        "intent": "entretenimiento",
-        "feedback": null,
-        "rating": null,
-        "timestamp": "2025-06-08T11:47:57.361602"
-      },
       {
         "message": "",
         "mood": "aventurero",
@@ -35,6 +47,38 @@
         "feedback": "5",
         "rating": 5,
         "timestamp": "2025-06-08T11:48:32.089331"
+      },
+      {
+        "message": "Hola, me siento triste \n",
+        "mood": "energetico",
+        "intent": "comer",
+        "feedback": null,
+        "rating": null,
+        "timestamp": "2025-06-08T12:00:25.694148"
+      },
+      {
+        "message": "Hola\n",
+        "mood": "aventurero",
+        "intent": "comer",
+        "feedback": null,
+        "rating": null,
+        "timestamp": "2025-06-08T12:02:04.978030"
+      },
+      {
+        "message": "Hola",
+        "mood": "aventurero",
+        "intent": "comer",
+        "feedback": null,
+        "rating": null,
+        "timestamp": "2025-06-08T12:03:13.241238"
+      },
+      {
+        "message": "Hola, me siento triste, quiero encontrar un lugar para pasar el rato",
+        "mood": "relajado",
+        "intent": "descanso",
+        "feedback": null,
+        "rating": null,
+        "timestamp": "2025-06-08T12:04:49.359952"
       }
     ]
   }
