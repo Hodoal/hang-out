@@ -18,11 +18,13 @@ import {
 } from 'react-native';
 import Markdown from "react-native-markdown-display";
 import Icon from "react-native-vector-icons/Ionicons";
+import { LinearGradient } from 'expo-linear-gradient';
 
 // APIs Configuration
-const OPENROUTER_API_KEY ='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';
+const OPENROUTER_API_KEY =
+  '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';
 const GOOGLE_MAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY'; // Reemplazar con tu API key
-const NLP_SERVER_URL = 'http://localhost:6000'; // Updated port for Flask NLP service
+const NLP_SERVER_URL = 'http://localhost:5000'; // Updated port for Flask NLP service
 const SITE_URL = 'barranquilla-guide.com';
 const SITE_NAME = 'Guía Barranquilla';
 
@@ -114,8 +116,16 @@ const ChatbotBarranquilla = () => {
     input: { flex: 1, backgroundColor: colors.inputBackground, color: colors.inputTextColor, paddingHorizontal: 16, paddingVertical: Platform.OS === "ios" ? 12 : 8, borderRadius: 25, maxHeight: 120, fontSize: 16, borderWidth: 1, borderColor: theme === "light" ? "#e9ecef" : "#333333", marginRight: 0 },
     sendButton: { marginLeft: 12, backgroundColor: colors.buttonBackground, width: 50, height: 50, borderRadius: 25, justifyContent: "center", alignItems: "center", elevation: 3, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84 },
     disabledButton: { backgroundColor: colors.disabledButtonBackground, elevation: 0 },
-    themeToggleButton: { position: "absolute", top: Platform.OS === 'android' ? 20 : 60, right: 10, padding: 10, backgroundColor: colors.primary, borderRadius: 5, zIndex: 1000 },
-    themeToggleButtonText: { color: colors.buttonIconColor }
+    themeToggleButton: {
+      position: "absolute",
+      top: Platform.OS === "ios" ? 40 : 20, // Adjust top for header context
+      right: 15, // Adjust right for header context
+      padding: 8, // Padding for the touchable area
+      borderRadius: 25, // Make it circular if desired, or remove for just icon
+      zIndex: 1000, // Keep on top
+      // backgroundColor: colors.primary, // Optional: if icon needs a background circle
+    },
+    // themeToggleButtonText style removed
   });
 
   const styles = getDynamicStyles(colors);
@@ -590,9 +600,18 @@ Responde SOLO con JSON válido, sin texto adicional.`;
 
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableOpacity onPress={() => setTheme(theme === 'light' ? 'dark' : 'light')} style={styles.themeToggleButton}>
-        <Text style={styles.themeToggleButtonText}>Tema</Text>
-      </TouchableOpacity>
+      <LinearGradient
+        colors={colors.headerBackground}
+        style={styles.header}
+      >
+        <Text style={styles.headerTitle}>Hang out</Text>
+        <Text style={styles.headerSubtitle}>
+          Tu asistente turístico inteligente
+        </Text>
+        <TouchableOpacity onPress={() => setTheme(theme === 'light' ? 'dark' : 'light')} style={styles.themeToggleButton}>
+          <Icon name={theme === "light" ? "moon-outline" : "sunny-outline"} size={26} color={colors.headerText} />
+        </TouchableOpacity>
+      </LinearGradient>
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -823,7 +842,5 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: 'bold',
     fontSize: 14,
-  }
-});
-
+  },
 export default ChatbotBarranquilla;
