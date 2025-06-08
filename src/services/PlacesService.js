@@ -25,10 +25,10 @@ class PlacesService {
       // OpenCageService.getPlaces ya devuelve el formato esperado.
       const places = await OpenCageService.getPlaces(searchTerm, { limit: 15 });
       return places;
-    } catch (error)
+    } catch (error) { // Added opening brace
       console.error('Error searching places with OpenCage:', error);
       return [];
-    }
+    } // This closing brace now correctly closes the catch block
   }
 
   // Obtener recomendaciones basadas en estado de ánimo

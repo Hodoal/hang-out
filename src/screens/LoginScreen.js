@@ -117,7 +117,7 @@ const LoginScreen = ({ navigation }) => {
     >
       <View style={styles.logoContainer}>
         <Image
-          source={require('../assets/logo.png')} // Ensure this path is correct
+          source={require('../../assets/logo.png')} // Updated path
           style={styles.logo}
           resizeMode="contain"
         />
