@@ -4,33 +4,30 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MainNavigator from './src/navigation/MainNavigator';
-import AuthContext from './src/context/AuthContext';
+// import AuthContext from './src/context/AuthContext'; // Changed to AuthProvider
+import { AuthProvider } from './src/context/AuthContext'; // Import AuthProvider
 import PlacesContext from './src/context/PlacesContext';
 import { ThemeProvider } from './src/context/ThemeContext';
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator(); // This Stack navigator isn't used here, can be removed if not used elsewhere from App.js
 
 export default function App() {
-  const [userId, setUserId] = React.useState(null); // Elimina el tipo "string | null"
-  const [places, setPlaces] = React.useState([]); // No se especifica el tipo
+  // Local userId state and useEffect for anonymousId are removed
+  const [places, setPlaces] = React.useState([]);
   const [preferences, setPreferences] = React.useState({
     mood: null,
     categories: [],
     location: null,
+    ambiance: null, // Added as per PlacesContext update
+    priceRange: null, // Added as per PlacesContext update
   });
 
-  // Generar ID anónimo al iniciar la app si no existe
-  React.useEffect(() => {
-    if (!userId) {
-      const anonymousId = 'anon_' + Math.random().toString(36).substring(2, 15);
-      setUserId(anonymousId);
-    }
-  }, [userId]);
+  // useEffect for anonymousId is removed. AuthProvider handles auth state.
 
   return (
     <ThemeProvider>
       <SafeAreaProvider>
-        <AuthContext.Provider value={{ userId, setUserId }}>
+        <AuthProvider> {/* AuthProvider now wraps PlacesContext and Navigation */}
           <PlacesContext.Provider
             value={{
               places,
@@ -43,7 +40,7 @@ export default function App() {
               <MainNavigator />
             </NavigationContainer>
           </PlacesContext.Provider>
-        </AuthContext.Provider>
+        </AuthProvider>
       </SafeAreaProvider>
     </ThemeProvider>
   );
