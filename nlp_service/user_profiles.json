@@ -31,21 +31,20 @@
         "mood": "energetico",
         "confidence": 0.6521882345611735,
         "timestamp": "2025-06-08T12:52:55.507933"
+      },
+      {
+        "mood": "aventurero",
+        "confidence": 0.21552351972093312,
+        "timestamp": "2025-06-08T12:58:36.096880"
       }
     ],
     "location_ratings": {},
-    "conversation_count": 6,
+    "conversation_count": 7,
     "avg_rating": 0.0,
-    "favorite_categories": [],
+    "favorite_categories": [
+      "comer"
+    ],
     "last_interactions": [
-      {
-        "message": "Hola, me siento aburrido, quiero encontrarme con la naturaleza ",
-        "mood": "energetico",
-        "intent": "naturaleza",
-        "feedback": null,
-        "rating": null,
-        "timestamp": "2025-06-08T12:27:44.666824"
-      },
       {
         "message": "Hola, estoy aburrido",
         "mood": "estresado",
@@ -77,6 +76,14 @@
         "feedback": null,
         "rating": null,
         "timestamp": "2025-06-08T12:52:55.508207"
+      },
+      {
+        "message": "",
+        "mood": "aventurero",
+        "intent": "comer",
+        "feedback": "5",
+        "rating": 5,
+        "timestamp": "2025-06-08T12:58:36.096958"
       }
     ]
   }
