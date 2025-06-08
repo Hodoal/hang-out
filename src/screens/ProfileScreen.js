@@ -15,30 +15,9 @@ import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../context/AuthContext'; // Import useAuth
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Still used for settings
 import UserService from '../services/UserService';
+import { moodsArray, placeTypesArray } from '../constants/preferences'; // Import constants
 
-// Copied from PreferencesScreen.js - ideally, move to a shared constants file
-const moodsArray = [
-  { id: 'relaxed', label: 'Relajado', icon: 'customerservice' },
-  { id: 'adventurous', label: 'Aventurero', icon: 'rocket1' },
-  { id: 'romantic', label: 'Romántico', icon: 'heart' },
-  { id: 'cultural', label: 'Cultural', icon: 'book' },
-  { id: 'party', label: 'Fiestero', icon: 'star' },
-  { id: 'foodie', label: 'Gourmet', icon: 'coffee' },
-  { id: 'nature', label: 'Amante de la naturaleza', icon: 'tree' },
-  { id: 'shopping', label: 'Compras', icon: 'shoppingcart' },
-];
-
-const placeTypesArray = [
-  { id: 'restaurants', label: 'Restaurantes' },
-  { id: 'museums', label: 'Museos' },
-  { id: 'parks', label: 'Parques' },
-  { id: 'bars', label: 'Bares' },
-  { id: 'beaches', label: 'Playas' },
-  { id: 'historical', label: 'Sitios históricos' },
-  { id: 'shopping', label: 'Centros comerciales' },
-  { id: 'entertainment', label: 'Entretenimiento' },
-];
-
+// Removed local/copied definitions of moodsArray and placeTypesArray
 
 const ProfileScreen = ({ navigation }) => { // Added navigation for logout potentially
   const { user, token, updateUserProfileContext, logout } = useAuth(); // Use AuthContext

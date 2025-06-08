@@ -11,32 +11,13 @@ import {
 // import axios from 'axios'; // Handled by AuthContext
 // import AsyncStorage from '@react-native-async-storage/async-storage'; // Handled by AuthContext
 import { AntDesign } from '@expo/vector-icons';
-import { useAuth } from '../../context/AuthContext'; // Import useAuth
+import { useAuth } from '../context/AuthContext'; // Corrected path
 import { useEffect } from 'react'; // Import useEffect
+import { moodsArray, placeTypesArray } from '../constants/preferences'; // Import constants
 
 // const API_URL = 'http://your-backend-url.com/api'; // Defined in AuthContext
 
-const moods = [
-  { id: 'relaxed', label: 'Relajado', icon: 'customerservice' },
-  { id: 'adventurous', label: 'Aventurero', icon: 'rocket1' },
-  { id: 'romantic', label: 'Romántico', icon: 'heart' },
-  { id: 'cultural', label: 'Cultural', icon: 'book' },
-  { id: 'party', label: 'Fiestero', icon: 'star' },
-  { id: 'foodie', label: 'Gourmet', icon: 'coffee' },
-  { id: 'nature', label: 'Amante de la naturaleza', icon: 'tree' },
-  { id: 'shopping', label: 'Compras', icon: 'shoppingcart' },
-];
-
-const placeTypes = [
-  { id: 'restaurants', label: 'Restaurantes' },
-  { id: 'museums', label: 'Museos' },
-  { id: 'parks', label: 'Parques' },
-  { id: 'bars', label: 'Bares' },
-  { id: 'beaches', label: 'Playas' },
-  { id: 'historical', label: 'Sitios históricos' },
-  { id: 'shopping', label: 'Centros comerciales' },
-  { id: 'entertainment', label: 'Entretenimiento' },
-];
+// Removed local moods and placeTypes definitions
 
 const PreferencesScreen = ({ navigation }) => { // Renamed component
   const { user, updateUserProfileContext, token } = useAuth(); // Use AuthContext
@@ -141,7 +122,7 @@ const PreferencesScreen = ({ navigation }) => { // Renamed component
         <Text style={styles.sectionSubtitle}>Selecciona hasta 3 opciones</Text>
 
         <View style={styles.optionsGrid}>
-          {moods.map((mood) => (
+          {moodsArray.map((mood) => (
             <TouchableOpacity
               key={mood.id}
               style={[
@@ -175,7 +156,7 @@ const PreferencesScreen = ({ navigation }) => { // Renamed component
         <Text style={styles.sectionSubtitle}>Selecciona hasta 5 opciones</Text>
 
         <View style={styles.optionsGrid}>
-          {placeTypes.map((place) => (
+          {placeTypesArray.map((place) => (
             <TouchableOpacity
               key={place.id}
               style={[

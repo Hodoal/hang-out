@@ -8,38 +8,51 @@ import {
 } from 'react-native';
 import { Button, Card, Rating } from 'react-native-elements';
 import PlacesContext from '../context/PlacesContext';
-import AuthContext from '../context/AuthContext';
+// import AuthContext from '../context/AuthContext'; // Removed old AuthContext
+import { useAuth } from '../context/AuthContext'; // Import useAuth
 import PlacesService from '../services/PlacesService';
 
 const RecommendationScreen = ({ navigation }) => {
   const { preferences } = useContext(PlacesContext);
-  const { userId } = useContext(AuthContext);
+  // const { userId } = useContext(AuthContext); // Removed old way of getting userId
+  const { user } = useAuth(); // Get user from useAuth
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchRecommendations();
-  }, [preferences.mood]);
+  }, [preferences.mood, user]); // Added user to dependency array
 
   const fetchRecommendations = async () => {
+    if (!user || !preferences.mood) { // Ensure user and mood are available
+      setLoading(false);
+      // Optionally set recommendations to [] if user logs out or mood is cleared
+      if (!user || !preferences.mood) setRecommendations([]);
+      return;
+    }
     setLoading(true);
     try {
       // Obtener recomendaciones basadas en el estado de ánimo
       const recommendedPlaces = await PlacesService.getRecommendationsByMood(
         preferences.mood,
-        userId
+        user.id // Use user.id here
       );
       setRecommendations(recommendedPlaces);
     } catch (error) {
       console.error('Error fetching recommendations:', error);
+      setRecommendations([]); // Clear recommendations on error
     } finally {
       setLoading(false);
     }
   };
 
   const handleFeedback = async (placeId, liked) => {
+    if (!user) { // Ensure user is available
+      console.warn('User not available for feedback.');
+      return;
+    }
     try {
-      await PlacesService.provideFeedback(placeId, userId, liked);
+      await PlacesService.provideFeedback(placeId, user.id, liked); // Use user.id here
       // Actualizar la lista después del feedback
       const updatedRecommendations = recommendations.map((place) => {
         if (place.id === placeId) {
