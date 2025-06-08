@@ -224,19 +224,27 @@ Responde SOLO con JSON válido, sin texto adicional.`;
       const data = await response.json();
 
       if (data.choices && data.choices[0] && data.choices[0].message) {
-        try {
-          const content = data.choices[0].message.content;
-          const jsonStart = content.indexOf('{');
-          const jsonEnd = content.lastIndexOf('}') + 1;
+        const rawContent = data.choices[0].message.content;
+        console.log("---- RAW CONTENT FROM OPENROUTER/DEEPSEEK ----");
+        console.log(rawContent);
+        console.log("-----------------------------------------------");
 
-          if (jsonStart !== -1 && jsonEnd !== -1) {
-            const jsonStr = content.substring(jsonStart, jsonEnd);
+        try {
+          // Attempt to make JSON extraction more robust by trimming and looking for first/last braces
+          const trimmedContent = rawContent.trim();
+          const jsonStart = trimmedContent.indexOf('{');
+          const jsonEnd = trimmedContent.lastIndexOf('}') + 1;
+
+          if (jsonStart !== -1 && jsonEnd > jsonStart) {
+            const jsonStr = trimmedContent.substring(jsonStart, jsonEnd);
+            console.log("---- EXTRACTED JSON STRING TO PARSE ----");
+            console.log(jsonStr);
+            console.log("----------------------------------------");
+
             const recommendationData = JSON.parse(jsonStr);
 
             // Buscar información del lugar principal en Google Places
-            const placeInfo = await searchGooglePlaces(
-              recommendationData.main_recommendation.name
-            );
+            const placeInfo = await searchGooglePlaces(recommendationData.main_recommendation.name);
 
             // Crear mensaje de recomendación
             let recommendationText = `🎯 **${recommendationData.main_recommendation.name}**\n`;
@@ -263,23 +271,17 @@ Responde SOLO con JSON válido, sin texto adicional.`;
               timestamp: new Date(),
               placeInfo: placeInfo,
               recommendationData: recommendationData,
-              requiresRating: true,
+              requiresRating: true
             };
 
-            setMessages((prevMessages) => [
-              ...prevMessages,
-              recommendationMessage,
-            ]);
+            setMessages(prevMessages => [...prevMessages, recommendationMessage]);
 
             // Guardar en historial de conversación
-            setConversationHistory((prev) => [
-              ...prev,
-              {
-                user_message: userMessage,
-                bot_response: recommendationData,
-                timestamp: new Date().toISOString(),
-              },
-            ]);
+            setConversationHistory(prev => [...prev, {
+              user_message: userMessage,
+              bot_response: recommendationData,
+              timestamp: new Date().toISOString()
+            }]);
 
             // Establecer que esperamos calificación
             setAwaitingRating(recommendationData.main_recommendation.name);
@@ -291,26 +293,29 @@ Responde SOLO con JSON válido, sin texto adicional.`;
                 text: '¿Qué te parece esta recomendación? 🌟\n\nCalifica del 1 al 5 (siendo 5 excelente) o cuéntame qué piensas. Tu feedback me ayuda a conocerte mejor y darte mejores sugerencias.',
                 sender: 'bot',
                 timestamp: new Date(),
-                awaitingRating: true,
+                awaitingRating: true
               };
-              setMessages((prevMessages) => [...prevMessages, ratingMessage]);
+              setMessages(prevMessages => [...prevMessages, ratingMessage]);
             }, 2000);
+
           } else {
-            throw new Error('No se pudo extraer JSON válido');
+            console.error('Could not find valid JSON structure in the content:', trimmedContent);
+            throw new Error('No se pudo extraer JSON válido del contenido.');
           }
         } catch (jsonError) {
-          console.error('Error parsing JSON:', jsonError);
-
+          console.error('Error parsing JSON from DeepSeek response:', jsonError);
+          console.error('Original content that failed to parse:', data.choices[0].message.content);
           // Fallback: respuesta directa sin JSON
           const fallbackMessage = {
             id: `fallback-${Date.now()}`,
-            text: data.choices[0].message.content,
+            text: data.choices[0].message.content, // Show raw content if parsing fails
             sender: 'bot',
             timestamp: new Date(),
           };
-          setMessages((prevMessages) => [...prevMessages, fallbackMessage]);
+          setMessages(prevMessages => [...prevMessages, fallbackMessage]);
         }
       } else {
+        console.error('Invalid response structure from OpenRouter/DeepSeek:', data);
         throw new Error('Respuesta inválida del modelo');
       }
     } catch (error) {
