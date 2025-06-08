@@ -20,15 +20,19 @@ class PlacesService {
   }
 
   // Buscar lugares por término
-  static async searchPlaces(searchTerm) {
+  static async searchPlaces(query) {
     try {
-      // OpenCageService.getPlaces ya devuelve el formato esperado.
-      const places = await OpenCageService.getPlaces(searchTerm, { limit: 15 });
-      return places;
-    } catch (error) { // Added opening brace
+      const placesData = await OpenCageService.getPlaces(query);
+      // Simulate an image URL if not provided by the API
+      const placesWithImages = placesData.map((place) => ({
+        ...place,
+        imageUrl: place.imageUrl || `https://picsum.photos/seed/${place.id}/300/200`,
+      }));
+      return placesWithImages;
+    } catch (error) { // Double-check this block
       console.error('Error searching places with OpenCage:', error);
       return [];
-    } // This closing brace now correctly closes the catch block
+    }
   }
 
   // Obtener recomendaciones basadas en estado de ánimo
