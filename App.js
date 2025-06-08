@@ -12,6 +12,7 @@ import { ThemeProvider } from './src/context/ThemeContext';
 
 // Import your screens
 import LoginScreen from './src/screens/LoginScreen';
+import HomeScreen from './src/screens/HomeScreen';
 import PreferencesScreen from './src/screens/PreferencesScreen'; // Corrected name
 
 const Stack = createStackNavigator();
@@ -38,21 +39,24 @@ const RootNavigator = () => {
 
   if (auth.isLoading) {
     return (
-      <View style={styles.loaderContainer}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" />
       </View>
     );
   }
 
-  if (auth.isAuthenticated) {
-    if (auth.user && !auth.user.hasCompletedPreferences) {
-      return <PreferencesScreens />;
-    }
-    return <MainNavigator />; // This is your main app navigator
-  }
-
-  return <AuthScreens />;
+  return (
+    <Stack.Navigator>
+      {auth.user ? (
+        <Stack.Screen name="Home" component={HomeScreen} />
+      ) : (
+        <Stack.Screen name="Login" component={LoginScreen} />
+      )}
+    </Stack.Navigator>
+  );
 };
+
+
 
 export default function App() {
   // const [userId, setUserId] = React.useState(null); // Managed by AuthProvider

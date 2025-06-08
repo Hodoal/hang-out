@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { Button, ListItem } from 'react-native-elements'; // Icon removed for now, can be re-added if needed
 import * as ImagePicker from 'expo-image-picker';
-import { useAuth } from '../../context/AuthContext'; // Import useAuth
+import { useAuth } from '../context/AuthContext'; // Import useAuth
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Still used for settings
 import UserService from '../services/UserService';
 import { moodsArray, placeTypesArray } from '../constants/preferences'; // Import constants
@@ -66,7 +66,7 @@ const ProfileScreen = ({ navigation }) => { // Added navigation for logout poten
         `settings_${user.id}`,
         JSON.stringify(settings)
       );
-    } catch (error)
+    } catch (error) {
       console.error('Error saving settings:', error);
     }
   };
@@ -178,7 +178,7 @@ const ProfileScreen = ({ navigation }) => { // Added navigation for logout poten
             <ActivityIndicator size="large" color="#ff6b6b" style={styles.profileImage} />
           ) : (
             <Image
-              source={user.profilePicture ? { uri: user.profilePicture } : require('../assets/default_profile.png')} // Ensure you have a default_profile.png
+              source={user.profilePicture ? { uri: user.profilePicture } : require('../../assets/default_profile.png')} // Ensure you have a default_profile.png
               style={styles.profileImage}
             />
           )}
@@ -340,9 +340,7 @@ const ProfileScreen = ({ navigation }) => { // Added navigation for logout poten
       </View>
     </ScrollView>
   );
-};
-
-// Removed getMoodDisplayName as preferences are now displayed using moodsArray/placeTypesArray
+}; // <--- ESTA llave y punto y coma cierran tu componente correctamente
 
 const styles = StyleSheet.create({
   container: {

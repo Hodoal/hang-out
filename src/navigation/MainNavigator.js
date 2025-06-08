@@ -20,7 +20,7 @@ const HomeStackNavigator = () => {
     <HomeStack.Navigator screenOptions={{ headerShown: false }}>
       <HomeStack.Screen name="HomeMain" component={HomeScreen} />
       <HomeStack.Screen name="PlaceDetail" component={PlaceDetailScreen} />
-      <RootStack.Screen name="Chatbot" component={ChatbotScreen} />
+      <HomeStack.Screen name="Chatbot" component={ChatbotScreen} /> {/* ✅ CORRECTO */}
     </HomeStack.Navigator>
   );
 };
