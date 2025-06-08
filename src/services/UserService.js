@@ -13,12 +13,12 @@ class UserService {
         visitedPlaces: Math.floor(Math.random() * 10),
         reviewsCount: Math.floor(Math.random() * 5),
         favoriteCategories: [
-          { name: 'Cafeterías', count: 3 },
-          { name: 'Restaurantes', count: 2 },
+          { id: 'cat_cafe', name: 'Cafeterías', count: 3 },
+          { id: 'cat_rest', name: 'Restaurantes', count: 2 },
         ],
         preferredMoods: [
-          { name: 'relaxed', count: 5 },
-          { name: 'creative', count: 3 },
+          { id: 'mood_relaxed', name: 'relaxed', count: 5 },
+          { id: 'mood_creative', name: 'creative', count: 3 },
         ],
       };
 

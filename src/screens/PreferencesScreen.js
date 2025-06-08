@@ -8,11 +8,13 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// import axios from 'axios'; // Handled by AuthContext
+// import AsyncStorage from '@react-native-async-storage/async-storage'; // Handled by AuthContext
 import { AntDesign } from '@expo/vector-icons';
+import { useAuth } from '../../context/AuthContext'; // Import useAuth
+import { useEffect } from 'react'; // Import useEffect
 
-const API_URL = 'http://your-backend-url.com/api'; // Reemplazar con tu URL real
+// const API_URL = 'http://your-backend-url.com/api'; // Defined in AuthContext
 
 const moods = [
   { id: 'relaxed', label: 'Relajado', icon: 'customerservice' },
@@ -36,10 +38,19 @@ const placeTypes = [
   { id: 'entertainment', label: 'Entretenimiento' },
 ];
 
-const PreferencesSetupScreen = ({ navigation }) => {
+const PreferencesScreen = ({ navigation }) => { // Renamed component
+  const { user, updateUserProfileContext, token } = useAuth(); // Use AuthContext
   const [selectedMoods, setSelectedMoods] = useState([]);
   const [selectedPlaceTypes, setSelectedPlaceTypes] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // Initialize selections if user preferences already exist
+  useEffect(() => {
+    if (user?.preferences) {
+      setSelectedMoods(user.preferences.moods || []);
+      setSelectedPlaceTypes(user.preferences.placeTypes || []);
+    }
+  }, [user]);
 
   const toggleMood = (moodId) => {
     if (selectedMoods.includes(moodId)) {
@@ -86,43 +97,27 @@ const PreferencesSetupScreen = ({ navigation }) => {
 
     setLoading(true);
 
+    const newPreferences = {
+      moods: selectedMoods,
+      placeTypes: selectedPlaceTypes,
+    };
+
     try {
-      // Obtener token y datos del usuario
-      const token = await AsyncStorage.getItem('userToken');
-      const userData = JSON.parse(await AsyncStorage.getItem('userData'));
+      // updateUserProfileContext should handle the API call and update user state in context
+      await updateUserProfileContext({
+        preferences: newPreferences,
+        hasCompletedPreferences: true,
+      });
 
-      // Enviar preferencias al backend
-      const response = await axios.post(
-        `${API_URL}/users/${userData.id}/preferences`,
-        {
-          moods: selectedMoods,
-          placeTypes: selectedPlaceTypes,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      // Actualizar datos del usuario en AsyncStorage
-      await AsyncStorage.setItem(
-        'userData',
-        JSON.stringify({
-          ...userData,
-          hasCompletedPreferences: true,
-          preferences: response.data.preferences,
-        })
-      );
-
-      // Navegar a la pantalla principal
-      navigation.replace('Home');
+      Alert.alert('Éxito', 'Preferencias guardadas correctamente.');
+      // Navigation should be handled by RootNavigator due to change in user.hasCompletedPreferences
+      // OR explicitly navigate if preferred:
+      // navigation.replace('Home');
     } catch (error) {
       console.error('Error al guardar preferencias:', error);
       Alert.alert(
         'Error',
-        error.response?.data?.message ||
-          'Ocurrió un error al guardar tus preferencias'
+        error.response?.data?.message || 'Ocurrió un error al guardar tus preferencias'
       );
     } finally {
       setLoading(false);
@@ -303,4 +298,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PreferencesSetupScreen;
+export default PreferencesScreen; // Renamed export

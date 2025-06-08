@@ -49,7 +49,7 @@ const HomeScreen = ({ navigation }) => {
     <TouchableOpacity
       onPress={() => navigation.navigate('PlaceDetail', { placeId: item.id })}
     >
-      <Card>
+      <Card containerStyle={styles.card}>
         <Card.Title>{item.name}</Card.Title>
         <Card.Divider />
         <Card.Image source={{ uri: item.imageUrl }} />
@@ -143,6 +143,15 @@ const styles = StyleSheet.create({
   description: {
     marginTop: 5,
     color: '#333',
+  },
+  card: { // Added card style
+    borderRadius: 10,
+    marginBottom: 10,
+    // shadowColor: '#000', // Optional: if you want more pronounced shadow
+    // shadowOffset: { width: 0, height: 1 },
+    // shadowOpacity: 0.2,
+    // shadowRadius: 1,
+    // elevation: 2,
   },
 });
 

@@ -11,17 +11,19 @@ import {
   Alert,
   Image,
 } from 'react-native';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// import axios from 'axios'; // Handled by AuthContext
+// import AsyncStorage from '@react-native-async-storage/async-storage'; // Handled by AuthContext
+import { useAuth } from '../context/AuthContext'; // Import useAuth
 
-const API_URL = 'http://your-backend-url.com/api'; // Reemplazar con tu URL real
+// const API_URL = 'http://your-backend-url.com/api'; // Defined in AuthContext
 
 const LoginScreen = ({ navigation }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false); // Replaced by auth.isLoading
+  const auth = useAuth(); // Use the AuthContext
 
   const handleAuth = async () => {
     if (!email || !password || (!isLogin && !name)) {
@@ -29,61 +31,48 @@ const LoginScreen = ({ navigation }) => {
       return;
     }
 
-    setLoading(true);
+    // setLoading(true); // Handled by AuthContext
 
     try {
+      let user;
       if (isLogin) {
-        // Login
-        const response = await axios.post(`${API_URL}/login`, {
-          email,
-          password,
-        });
+        await auth.login(email, password);
+        user = auth.user; // Access user from context after login
+      } else {
+        await auth.register(name, email, password);
+        user = auth.user; // Access user from context after register
+      }
 
-        // Guardar token y datos de usuario
-        await AsyncStorage.setItem('userToken', response.data.token);
-        await AsyncStorage.setItem(
-          'userData',
-          JSON.stringify(response.data.user)
-        );
-
-        // Verificar si el usuario ya completó sus preferencias
-        if (response.data.user.hasCompletedPreferences) {
+      // Navigation logic based on user state from context
+      // This might be slightly delayed if user state update in context is not immediate
+      // For more robust navigation, it's better to handle this in App.js or MainNavigator based on isAuthenticated and user state
+      // However, per instructions, keeping immediate navigation here for now.
+      if (user) { // Check if user is populated
+        if (user.hasCompletedPreferences) {
           navigation.replace('Home');
         } else {
           navigation.replace('PreferencesSetup');
         }
       } else {
-        // Registro
-        const response = await axios.post(`${API_URL}/register`, {
-          name,
-          email,
-          password,
-        });
-
-        // Guardar token y datos de usuario
-        await AsyncStorage.setItem('userToken', response.data.token);
-        await AsyncStorage.setItem(
-          'userData',
-          JSON.stringify(response.data.user)
-        );
-
-        // Ir a configuración de preferencias
-        navigation.replace('PreferencesSetup');
+        // This case should ideally not be hit if login/register was successful
+        // and user state was updated properly.
+        console.warn("User data not available immediately after auth operation for navigation.");
       }
+
     } catch (error) {
-      console.error('Error en autenticación:', error);
+      // Error is already logged in AuthContext, show alert here
       Alert.alert(
-        'Error',
-        error.response?.data?.message || 'Ocurrió un error en la autenticación'
+        'Error de Autenticación',
+        error.response?.data?.message || error.message || 'Ocurrió un error'
       );
     } finally {
-      setLoading(false);
+      // setLoading(false); // Handled by AuthContext
     }
   };
 
   const toggleAuthMode = () => {
     setIsLogin(!isLogin);
-    // Limpiar campos al cambiar de modo
+    auth.error = null; // Clear any previous errors from context if you add an error state there
     setEmail('');
     setPassword('');
     setName('');
@@ -147,9 +136,9 @@ const LoginScreen = ({ navigation }) => {
         <TouchableOpacity
           style={styles.authButton}
           onPress={handleAuth}
-          disabled={loading}
+          disabled={auth.isLoading}
         >
-          {loading ? (
+          {auth.isLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
             <Text style={styles.authButtonText}>

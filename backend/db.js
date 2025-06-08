@@ -8,9 +8,23 @@ db.serialize(() => {
       name TEXT,
       email TEXT UNIQUE,
       password TEXT,
+      profilePicture TEXT,
+      preferences TEXT,
       hasCompletedPreferences INTEGER DEFAULT 0
     )
   `);
+
+  // Add columns if they don't exist, for existing databases
+  db.run("ALTER TABLE users ADD COLUMN profilePicture TEXT", (err) => {
+    if (err && !err.message.includes("duplicate column name")) {
+      console.error("Error adding profilePicture column:", err);
+    }
+  });
+  db.run("ALTER TABLE users ADD COLUMN preferences TEXT", (err) => {
+    if (err && !err.message.includes("duplicate column name")) {
+      console.error("Error adding preferences column:", err);
+    }
+  });
 });
 
 module.exports = db;
