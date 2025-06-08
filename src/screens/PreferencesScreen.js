@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -22,7 +22,7 @@ const moods = [
   { id: 'party', label: 'Fiestero', icon: 'star' },
   { id: 'foodie', label: 'Gourmet', icon: 'coffee' },
   { id: 'nature', label: 'Amante de la naturaleza', icon: 'tree' },
-  { id: 'shopping', label: 'Compras', icon: 'shoppingcart' }
+  { id: 'shopping', label: 'Compras', icon: 'shoppingcart' },
 ];
 
 const placeTypes = [
@@ -33,7 +33,7 @@ const placeTypes = [
   { id: 'beaches', label: 'Playas' },
   { id: 'historical', label: 'Sitios históricos' },
   { id: 'shopping', label: 'Centros comerciales' },
-  { id: 'entertainment', label: 'Entretenimiento' }
+  { id: 'entertainment', label: 'Entretenimiento' },
 ];
 
 const PreferencesSetupScreen = ({ navigation }) => {
@@ -43,33 +43,44 @@ const PreferencesSetupScreen = ({ navigation }) => {
 
   const toggleMood = (moodId) => {
     if (selectedMoods.includes(moodId)) {
-      setSelectedMoods(selectedMoods.filter(id => id !== moodId));
+      setSelectedMoods(selectedMoods.filter((id) => id !== moodId));
     } else {
       // Limitar a máximo 3 estados de ánimo
       if (selectedMoods.length < 3) {
         setSelectedMoods([...selectedMoods, moodId]);
       } else {
-        Alert.alert('Límite alcanzado', 'Puedes seleccionar hasta 3 estados de ánimo');
+        Alert.alert(
+          'Límite alcanzado',
+          'Puedes seleccionar hasta 3 estados de ánimo'
+        );
       }
     }
   };
 
   const togglePlaceType = (placeTypeId) => {
     if (selectedPlaceTypes.includes(placeTypeId)) {
-      setSelectedPlaceTypes(selectedPlaceTypes.filter(id => id !== placeTypeId));
+      setSelectedPlaceTypes(
+        selectedPlaceTypes.filter((id) => id !== placeTypeId)
+      );
     } else {
       // Limitar a máximo 5 tipos de lugares
       if (selectedPlaceTypes.length < 5) {
         setSelectedPlaceTypes([...selectedPlaceTypes, placeTypeId]);
       } else {
-        Alert.alert('Límite alcanzado', 'Puedes seleccionar hasta 5 tipos de lugares');
+        Alert.alert(
+          'Límite alcanzado',
+          'Puedes seleccionar hasta 5 tipos de lugares'
+        );
       }
     }
   };
 
   const savePreferences = async () => {
     if (selectedMoods.length === 0 || selectedPlaceTypes.length === 0) {
-      Alert.alert('Selección incompleta', 'Por favor selecciona al menos un estado de ánimo y un tipo de lugar');
+      Alert.alert(
+        'Selección incompleta',
+        'Por favor selecciona al menos un estado de ánimo y un tipo de lugar'
+      );
       return;
     }
 
@@ -85,30 +96,33 @@ const PreferencesSetupScreen = ({ navigation }) => {
         `${API_URL}/users/${userData.id}/preferences`,
         {
           moods: selectedMoods,
-          placeTypes: selectedPlaceTypes
+          placeTypes: selectedPlaceTypes,
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
       // Actualizar datos del usuario en AsyncStorage
-      await AsyncStorage.setItem('userData', JSON.stringify({
-        ...userData,
-        hasCompletedPreferences: true,
-        preferences: response.data.preferences
-      }));
+      await AsyncStorage.setItem(
+        'userData',
+        JSON.stringify({
+          ...userData,
+          hasCompletedPreferences: true,
+          preferences: response.data.preferences,
+        })
+      );
 
       // Navegar a la pantalla principal
       navigation.replace('Home');
-
     } catch (error) {
       console.error('Error al guardar preferencias:', error);
       Alert.alert(
         'Error',
-        error.response?.data?.message || 'Ocurrió un error al guardar tus preferencias'
+        error.response?.data?.message ||
+          'Ocurrió un error al guardar tus preferencias'
       );
     } finally {
       setLoading(false);
@@ -120,33 +134,38 @@ const PreferencesSetupScreen = ({ navigation }) => {
       <View style={styles.header}>
         <Text style={styles.title}>Tus Preferencias</Text>
         <Text style={styles.subtitle}>
-          Personaliza tu experiencia para recibir recomendaciones según tu estado de ánimo
+          Personaliza tu experiencia para recibir recomendaciones según tu
+          estado de ánimo
         </Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>¿Qué estados de ánimo te describen mejor?</Text>
+        <Text style={styles.sectionTitle}>
+          ¿Qué estados de ánimo te describen mejor?
+        </Text>
         <Text style={styles.sectionSubtitle}>Selecciona hasta 3 opciones</Text>
-        
+
         <View style={styles.optionsGrid}>
-          {moods.map(mood => (
+          {moods.map((mood) => (
             <TouchableOpacity
               key={mood.id}
               style={[
                 styles.optionCard,
-                selectedMoods.includes(mood.id) && styles.selectedOption
+                selectedMoods.includes(mood.id) && styles.selectedOption,
               ]}
               onPress={() => toggleMood(mood.id)}
             >
-              <AntDesign 
-                name={mood.icon} 
-                size={24} 
-                color={selectedMoods.includes(mood.id) ? '#fff' : '#4C68D7'} 
+              <AntDesign
+                name={mood.icon}
+                size={24}
+                color={selectedMoods.includes(mood.id) ? '#fff' : '#4C68D7'}
               />
-              <Text style={[
-                styles.optionText,
-                selectedMoods.includes(mood.id) && styles.selectedOptionText
-              ]}>
+              <Text
+                style={[
+                  styles.optionText,
+                  selectedMoods.includes(mood.id) && styles.selectedOptionText,
+                ]}
+              >
                 {mood.label}
               </Text>
             </TouchableOpacity>
@@ -155,23 +174,28 @@ const PreferencesSetupScreen = ({ navigation }) => {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>¿Qué lugares te gustaría visitar?</Text>
+        <Text style={styles.sectionTitle}>
+          ¿Qué lugares te gustaría visitar?
+        </Text>
         <Text style={styles.sectionSubtitle}>Selecciona hasta 5 opciones</Text>
-        
+
         <View style={styles.optionsGrid}>
-          {placeTypes.map(place => (
+          {placeTypes.map((place) => (
             <TouchableOpacity
               key={place.id}
               style={[
                 styles.optionCard,
-                selectedPlaceTypes.includes(place.id) && styles.selectedOption
+                selectedPlaceTypes.includes(place.id) && styles.selectedOption,
               ]}
               onPress={() => togglePlaceType(place.id)}
             >
-              <Text style={[
-                styles.optionText,
-                selectedPlaceTypes.includes(place.id) && styles.selectedOptionText
-              ]}>
+              <Text
+                style={[
+                  styles.optionText,
+                  selectedPlaceTypes.includes(place.id) &&
+                    styles.selectedOptionText,
+                ]}
+              >
                 {place.label}
               </Text>
             </TouchableOpacity>

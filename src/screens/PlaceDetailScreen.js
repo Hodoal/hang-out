@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+} from 'react-native';
 import { Image, Button, Divider, Rating } from 'react-native-elements';
 import AuthContext from '../context/AuthContext';
 import PlacesService from '../services/PlacesService';
@@ -22,7 +29,7 @@ const PlaceDetailScreen = ({ route, navigation }) => {
     try {
       const placeDetails = await PlacesService.getPlaceById(placeId);
       setPlace(placeDetails);
-      
+
       const placeReviews = await PlacesService.getPlaceReviews(placeId);
       setReviews(placeReviews);
     } catch (error) {
@@ -49,7 +56,7 @@ const PlaceDetailScreen = ({ route, navigation }) => {
         date: new Date().toISOString(),
         isAnonymous: true,
       };
-      
+
       setReviews([newReview, ...reviews]);
       setUserReview('');
       setUserRating(0);
@@ -74,47 +81,51 @@ const PlaceDetailScreen = ({ route, navigation }) => {
         style={styles.image}
         PlaceholderContent={<Text>Cargando imagen...</Text>}
       />
-      
+
       <View style={styles.contentContainer}>
         <Text style={styles.title}>{place.name}</Text>
-        
+
         <View style={styles.ratingContainer}>
-          <Rating
-            readonly
-            startingValue={place.rating}
-            imageSize={20}
-          />
+          <Rating readonly startingValue={place.rating} imageSize={20} />
           <Text style={styles.ratingText}>({place.ratingCount} reseñas)</Text>
         </View>
-        
+
         <Text style={styles.category}>{place.category}</Text>
         <Text style={styles.address}>{place.address}</Text>
-        
+
         <Divider style={styles.divider} />
-        
+
         <Text style={styles.sectionTitle}>Descripción</Text>
         <Text style={styles.description}>{place.description}</Text>
-        
+
         <View style={styles.moodMatchContainer}>
-          <Text style={styles.sectionTitle}>Recomendado para estados de ánimo:</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.moodTagsContainer}>
+          <Text style={styles.sectionTitle}>
+            Recomendado para estados de ánimo:
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.moodTagsContainer}
+          >
             {place.matchingMoods.map((mood) => (
               <View key={mood} style={styles.moodTag}>
-                <Text style={styles.moodTagText}>{getMoodDisplayName(mood)}</Text>
+                <Text style={styles.moodTagText}>
+                  {getMoodDisplayName(mood)}
+                </Text>
               </View>
             ))}
           </ScrollView>
         </View>
-        
+
         <Divider style={styles.divider} />
-        
+
         <Text style={styles.sectionTitle}>Deja tu reseña (anónima)</Text>
         <Rating
           showRating
           onFinishRating={setUserRating}
           style={styles.userRating}
         />
-        
+
         <TextInput
           placeholder="Escribe tu reseña aquí..."
           value={userReview}
@@ -123,27 +134,23 @@ const PlaceDetailScreen = ({ route, navigation }) => {
           textAlignVertical="top"
           style={styles.reviewInput}
         />
-        
+
         <Button
           title="Enviar Reseña"
           onPress={submitReview}
           buttonStyle={styles.submitButton}
         />
-        
+
         <Divider style={styles.divider} />
-        
+
         <Text style={styles.sectionTitle}>Reseñas de usuarios</Text>
-        
+
         {reviews.length > 0 ? (
           reviews.map((review) => (
             <View key={review.id} style={styles.reviewItem}>
               <View style={styles.reviewHeader}>
                 <Text style={styles.reviewUser}>Usuario anónimo</Text>
-                <Rating
-                  readonly
-                  startingValue={review.rating}
-                  imageSize={16}
-                />
+                <Rating readonly startingValue={review.rating} imageSize={16} />
               </View>
               <Text style={styles.reviewDate}>
                 {new Date(review.date).toLocaleDateString()}

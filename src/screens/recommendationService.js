@@ -51,9 +51,9 @@ class RecommendationService {
         activity,
         city,
         mood,
-        limit
+        limit,
       });
-      
+
       return response.data;
     } catch (error) {
       console.error('Error al obtener recomendaciones:', error);
@@ -85,7 +85,9 @@ class RecommendationService {
    */
   async analyzeActivity(text) {
     try {
-      const response = await axios.post(`${API_URL}/analyze-activity`, { text });
+      const response = await axios.post(`${API_URL}/analyze-activity`, {
+        text,
+      });
       return response.data;
     } catch (error) {
       console.error('Error al analizar actividad:', error);
@@ -105,33 +107,36 @@ class RecommendationService {
       try {
         await this.checkHealth();
       } catch (healthError) {
-        console.warn('API no disponible, usando procesamiento local:', healthError);
+        console.warn(
+          'API no disponible, usando procesamiento local:',
+          healthError
+        );
         // Si la API no está disponible, devolver datos predeterminados
         return this._processMessageLocally(message);
       }
-      
+
       // Si la API está disponible, proceder normalmente
       const moodResult = await this.analyzeMood(message);
       const activityResult = await this.analyzeActivity(message);
-      
+
       return {
         mood: moodResult.detected_mood,
         moodConfidence: moodResult.confidence,
         activity: activityResult.detected_activity,
         activityText: activityResult.activity_text,
         activityConfidence: activityResult.confidence,
-        allDetectedActivities: activityResult.all_detected_activities || []
+        allDetectedActivities: activityResult.all_detected_activities || [],
       };
     } catch (error) {
       console.error('Error al procesar mensaje del usuario:', error);
       this._logDetailedError(error);
-      
+
       // Si falla, usar el procesamiento local como respaldo
       console.warn('Usando procesamiento local como respaldo');
       return this._processMessageLocally(message);
     }
   }
-  
+
   /**
    * Método privado para procesar mensajes localmente cuando la API no está disponible
    * @param {string} message - Mensaje del usuario
@@ -139,53 +144,75 @@ class RecommendationService {
    */
   _processMessageLocally(message) {
     const lowerMessage = message.toLowerCase();
-    
+
     // Detección simple de estado de ánimo
     let mood = 'neutral';
     let moodConfidence = 0.5;
-    
-    if (lowerMessage.includes('feliz') || lowerMessage.includes('contento') || lowerMessage.includes('bien')) {
+
+    if (
+      lowerMessage.includes('feliz') ||
+      lowerMessage.includes('contento') ||
+      lowerMessage.includes('bien')
+    ) {
       mood = 'happy';
       moodConfidence = 0.8;
-    } else if (lowerMessage.includes('triste') || lowerMessage.includes('mal')) {
+    } else if (
+      lowerMessage.includes('triste') ||
+      lowerMessage.includes('mal')
+    ) {
       mood = 'sad';
       moodConfidence = 0.8;
     } else if (lowerMessage.includes('aburrido')) {
       mood = 'bored';
       moodConfidence = 0.8;
-    } else if (lowerMessage.includes('estresado') || lowerMessage.includes('cansado')) {
+    } else if (
+      lowerMessage.includes('estresado') ||
+      lowerMessage.includes('cansado')
+    ) {
       mood = 'stressed';
       moodConfidence = 0.8;
     }
-    
+
     // Detección simple de actividad
     let activity = 'general';
     let activityConfidence = 0.5;
-    
-    if (lowerMessage.includes('comer') || lowerMessage.includes('restaurante')) {
+
+    if (
+      lowerMessage.includes('comer') ||
+      lowerMessage.includes('restaurante')
+    ) {
       activity = 'food';
       activityConfidence = 0.8;
-    } else if (lowerMessage.includes('pasear') || lowerMessage.includes('caminar')) {
+    } else if (
+      lowerMessage.includes('pasear') ||
+      lowerMessage.includes('caminar')
+    ) {
       activity = 'nature';
       activityConfidence = 0.8;
-    } else if (lowerMessage.includes('museo') || lowerMessage.includes('arte')) {
+    } else if (
+      lowerMessage.includes('museo') ||
+      lowerMessage.includes('arte')
+    ) {
       activity = 'culture';
       activityConfidence = 0.8;
-    } else if (lowerMessage.includes('relaj') || lowerMessage.includes('descansar')) {
+    } else if (
+      lowerMessage.includes('relaj') ||
+      lowerMessage.includes('descansar')
+    ) {
       activity = 'relax';
       activityConfidence = 0.8;
     }
-    
+
     return {
       mood: mood,
       moodConfidence: moodConfidence,
       activity: activity,
       activityText: message.substring(0, 100),
       activityConfidence: activityConfidence,
-      allDetectedActivities: [activity]
+      allDetectedActivities: [activity],
     };
   }
-  
+
   /**
    * Método privado para registrar errores detallados
    * @param {Error} error - Objeto de error

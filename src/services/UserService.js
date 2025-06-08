@@ -7,7 +7,7 @@ class UserService {
       // En producción, aquí se haría una llamada a API real
       // const response = await axios.get(`${API_BASE_URL}/users/${userId}/stats`);
       // return response.data;
-      
+
       // Para desarrollo, generamos datos de estadísticas simulados
       const mockStats = {
         visitedPlaces: Math.floor(Math.random() * 10),
@@ -21,13 +21,13 @@ class UserService {
           { name: 'creative', count: 3 },
         ],
       };
-      
+
       // Intentar recuperar estadísticas almacenadas localmente
       const storedStats = await AsyncStorage.getItem(`stats_${userId}`);
       if (storedStats) {
         return JSON.parse(storedStats);
       }
-      
+
       // Si no hay estadísticas almacenadas, guardamos las mock y las devolvemos
       await AsyncStorage.setItem(`stats_${userId}`, JSON.stringify(mockStats));
       return mockStats;
@@ -47,7 +47,7 @@ class UserService {
     try {
       // En producción, aquí se haría una llamada a API real
       // await axios.delete(`${API_BASE_URL}/users/${userId}/feedback`);
-      
+
       // Para desarrollo, eliminamos los datos almacenados localmente
       await AsyncStorage.removeItem(`feedback_${userId}`);
       await AsyncStorage.removeItem(`stats_${userId}`);

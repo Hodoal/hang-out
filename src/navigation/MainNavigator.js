@@ -48,8 +48,11 @@ const TabNavigator = () => {
           } else if (route.name === 'Profile') {
             iconName = 'person';
           } else if (route.name === 'Chatbot') {
-            iconName = 'chat'; } 
-          return <Icon name={iconName} type="material" size={size} color={color} />;
+            iconName = 'chat';
+          }
+          return (
+            <Icon name={iconName} type="material" size={size} color={color} />
+          );
         },
       })}
     >
@@ -57,7 +60,6 @@ const TabNavigator = () => {
       <Tab.Screen name="Chatbot" component={ChatbotScreen} />
       <Tab.Screen name="Mood" component={MoodStackNavigator} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
-
     </Tab.Navigator>
   );
 };
@@ -68,7 +70,10 @@ const MainNavigator = () => {
     <RootStack.Navigator screenOptions={{ headerShown: false }}>
       <RootStack.Screen name="Tabs" component={TabNavigator} />
       {/* Pantallas accesibles desde cualquier parte de la app */}
-      <RootStack.Screen name="Recommendation" component={RecommendationScreen} />
+      <RootStack.Screen
+        name="Recommendation"
+        component={RecommendationScreen}
+      />
     </RootStack.Navigator>
   );
 };

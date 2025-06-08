@@ -18,9 +18,10 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 
 // APIs Configuration
-const OPENROUTER_API_KEY = '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';
+const OPENROUTER_API_KEY =
+  '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';
 const GOOGLE_MAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY'; // Reemplazar con tu API key
-const NLP_SERVER_URL = 'http://localhost:8080'; // URL del servidor Python
+const NLP_SERVER_URL = 'http://localhost:5000'; // Updated port for Flask NLP service
 const SITE_URL = 'barranquilla-guide.com';
 const SITE_NAME = 'Guía Barranquilla';
 
@@ -42,11 +43,11 @@ const ChatbotBarranquilla = () => {
     preferences: [],
     mood_history: [],
     location_ratings: {},
-    conversation_count: 0
+    conversation_count: 0,
   });
   const [conversationHistory, setConversationHistory] = useState([]);
   const [awaitingRating, setAwaitingRating] = useState(null);
-  
+
   const flatListRef = useRef(null);
 
   useEffect(() => {
@@ -59,31 +60,41 @@ const ChatbotBarranquilla = () => {
   }, [messages]);
 
   // Función para enviar datos al modelo NLP
-  const updateUserProfile = async (userMessage, feedback = null, rating = null) => {
+  const updateUserProfile = async (
+    userMessage,
+    feedback = null,
+    rating = null
+  ) => {
+    const userId = 'default_user'; // Using a default user ID for now
     try {
       const profileData = {
         message: userMessage,
         feedback: feedback,
         rating: rating,
-        current_profile: userProfile,
-        conversation_history: conversationHistory.slice(-10) // Últimas 10 interacciones
       };
 
-      const response = await fetch(`${NLP_SERVER_URL}/update_profile`, {
+      // The NLP service now manages the profile internally
+      const response = await fetch(`${NLP_SERVER_URL}/profile/${userId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(profileData)
+        body: JSON.stringify(profileData),
       });
 
       if (response.ok) {
         const updatedProfile = await response.json();
-        setUserProfile(updatedProfile.user_profile);
-        return updatedProfile;
+        // The Python service returns the full updated profile
+        // We need to ensure setUserProfile is called with the correct structure
+        // The Python model returns the profile directly, not nested under 'user_profile'
+        setUserProfile(updatedProfile);
+        return updatedProfile; // Return the updated profile for generateRecommendation
+      } else {
+        const errorData = await response.json();
+        console.error('Error updating user profile (server):', errorData);
       }
     } catch (error) {
-      console.error('Error updating user profile:', error);
+      console.error('Error updating user profile (network/client):', error);
     }
     return null;
   };
@@ -93,10 +104,10 @@ const ChatbotBarranquilla = () => {
     try {
       const query = encodeURIComponent(`${placeName} Barranquilla Colombia`);
       const placesUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${GOOGLE_MAPS_API_KEY}`;
-      
+
       const response = await fetch(placesUrl);
       const data = await response.json();
-      
+
       if (data.results && data.results.length > 0) {
         const place = data.results[0];
         return {
@@ -105,8 +116,10 @@ const ChatbotBarranquilla = () => {
           address: place.formatted_address,
           location: place.geometry.location,
           rating: place.rating,
-          photo_reference: place.photos ? place.photos[0].photo_reference : null,
-          maps_url: `https://www.google.com/maps/place/?q=place_id:${place.place_id}`
+          photo_reference: place.photos
+            ? place.photos[0].photo_reference
+            : null,
+          maps_url: `https://www.google.com/maps/place/?q=place_id:${place.place_id}`,
         };
       }
       return null;
@@ -125,21 +138,23 @@ const ChatbotBarranquilla = () => {
   // Función principal para generar recomendaciones con DeepSeek R1
   const generateRecommendation = async (userMessage) => {
     setIsTyping(true);
-    
+
     // Actualizar perfil del usuario
     const profileUpdate = await updateUserProfile(userMessage);
-    
+
     // Construir contexto personalizado basado en el perfil del usuario
-    const userContext = profileUpdate ? 
-      `Perfil del usuario: 
+    const userContext = profileUpdate
+      ? `Perfil del usuario:
       - Preferencias: ${userProfile.preferences.join(', ')}
       - Historial de estados de ánimo: ${userProfile.mood_history.slice(-3).join(', ')}
-      - Lugares con mejor calificación: ${Object.entries(userProfile.location_ratings)
+      - Lugares con mejor calificación: ${Object.entries(
+        userProfile.location_ratings
+      )
         .filter(([_, rating]) => rating >= 4)
         .map(([place, _]) => place)
         .join(', ')}
-      - Número de conversaciones: ${userProfile.conversation_count}` : 
-      'Usuario nuevo sin historial previo.';
+      - Número de conversaciones: ${userProfile.conversation_count}`
+      : 'Usuario nuevo sin historial previo.';
 
     const prompt = `Eres un guía turístico experto y amigable de Barranquilla, Colombia. Tu misión es recomendar lugares específicos basándote en el estado de ánimo o interés del usuario.
 
@@ -182,54 +197,59 @@ Responde en este formato JSON exacto:
 Responde SOLO con JSON válido, sin texto adicional.`;
 
     try {
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-          "HTTP-Referer": SITE_URL,
-          "X-Title": SITE_NAME,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          "model": "deepseek/deepseek-r1:free",
-          "messages": [
-            {
-              "role": "user",
-              "content": prompt
-            }
-          ],
-          "temperature": 0.7,
-          "max_tokens": 1000
-        })
-      });
+      const response = await fetch(
+        'https://openrouter.ai/api/v1/chat/completions',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+            'HTTP-Referer': SITE_URL,
+            'X-Title': SITE_NAME,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'deepseek/deepseek-r1:free',
+            messages: [
+              {
+                role: 'user',
+                content: prompt,
+              },
+            ],
+            temperature: 0.7,
+            max_tokens: 1000,
+          }),
+        }
+      );
 
       const data = await response.json();
-      
+
       if (data.choices && data.choices[0] && data.choices[0].message) {
         try {
           const content = data.choices[0].message.content;
           const jsonStart = content.indexOf('{');
           const jsonEnd = content.lastIndexOf('}') + 1;
-          
+
           if (jsonStart !== -1 && jsonEnd !== -1) {
             const jsonStr = content.substring(jsonStart, jsonEnd);
             const recommendationData = JSON.parse(jsonStr);
-            
+
             // Buscar información del lugar principal en Google Places
-            const placeInfo = await searchGooglePlaces(recommendationData.main_recommendation.name);
-            
+            const placeInfo = await searchGooglePlaces(
+              recommendationData.main_recommendation.name
+            );
+
             // Crear mensaje de recomendación
             let recommendationText = `🎯 **${recommendationData.main_recommendation.name}**\n`;
             recommendationText += `📍 ${recommendationData.main_recommendation.type}\n\n`;
             recommendationText += `${recommendationData.main_recommendation.description}\n\n`;
             recommendationText += `✨ **¿Por qué es perfecto para ti?**\n${recommendationData.main_recommendation.why_perfect}\n\n`;
             recommendationText += `⏰ **Mejor momento:** ${recommendationData.main_recommendation.best_time}\n\n`;
-            
+
             if (placeInfo) {
               recommendationText += `⭐ Calificación: ${placeInfo.rating || 'N/A'}\n`;
               recommendationText += `📍 ${placeInfo.address}\n\n`;
             }
-            
+
             recommendationText += `🎁 **Consejo local:** ${recommendationData.local_tip}\n\n`;
             recommendationText += `**Otras opciones:**\n`;
             recommendationData.alternatives.forEach((alt, index) => {
@@ -243,21 +263,27 @@ Responde SOLO con JSON válido, sin texto adicional.`;
               timestamp: new Date(),
               placeInfo: placeInfo,
               recommendationData: recommendationData,
-              requiresRating: true
+              requiresRating: true,
             };
 
-            setMessages(prevMessages => [...prevMessages, recommendationMessage]);
-            
+            setMessages((prevMessages) => [
+              ...prevMessages,
+              recommendationMessage,
+            ]);
+
             // Guardar en historial de conversación
-            setConversationHistory(prev => [...prev, {
-              user_message: userMessage,
-              bot_response: recommendationData,
-              timestamp: new Date().toISOString()
-            }]);
+            setConversationHistory((prev) => [
+              ...prev,
+              {
+                user_message: userMessage,
+                bot_response: recommendationData,
+                timestamp: new Date().toISOString(),
+              },
+            ]);
 
             // Establecer que esperamos calificación
             setAwaitingRating(recommendationData.main_recommendation.name);
-            
+
             // Mensaje para solicitar calificación
             setTimeout(() => {
               const ratingMessage = {
@@ -265,17 +291,16 @@ Responde SOLO con JSON válido, sin texto adicional.`;
                 text: '¿Qué te parece esta recomendación? 🌟\n\nCalifica del 1 al 5 (siendo 5 excelente) o cuéntame qué piensas. Tu feedback me ayuda a conocerte mejor y darte mejores sugerencias.',
                 sender: 'bot',
                 timestamp: new Date(),
-                awaitingRating: true
+                awaitingRating: true,
               };
-              setMessages(prevMessages => [...prevMessages, ratingMessage]);
+              setMessages((prevMessages) => [...prevMessages, ratingMessage]);
             }, 2000);
-
           } else {
             throw new Error('No se pudo extraer JSON válido');
           }
         } catch (jsonError) {
           console.error('Error parsing JSON:', jsonError);
-          
+
           // Fallback: respuesta directa sin JSON
           const fallbackMessage = {
             id: `fallback-${Date.now()}`,
@@ -283,21 +308,21 @@ Responde SOLO con JSON válido, sin texto adicional.`;
             sender: 'bot',
             timestamp: new Date(),
           };
-          setMessages(prevMessages => [...prevMessages, fallbackMessage]);
+          setMessages((prevMessages) => [...prevMessages, fallbackMessage]);
         }
       } else {
         throw new Error('Respuesta inválida del modelo');
       }
     } catch (error) {
       console.error('Error generating recommendation:', error);
-      
+
       const errorMessage = {
         id: `error-${Date.now()}`,
         text: 'Lo siento, tuve un problema técnico. ¿Puedes contarme de nuevo qué tipo de lugar buscas en Barranquilla?',
         sender: 'bot',
         timestamp: new Date(),
       };
-      setMessages(prevMessages => [...prevMessages, errorMessage]);
+      setMessages((prevMessages) => [...prevMessages, errorMessage]);
     } finally {
       setIsTyping(false);
     }
@@ -306,7 +331,7 @@ Responde SOLO con JSON válido, sin texto adicional.`;
   // Función para procesar calificaciones
   const processRating = async (ratingText) => {
     let numericRating = null;
-    
+
     // Extraer calificación numérica
     const ratingMatch = ratingText.match(/[1-5]/);
     if (ratingMatch) {
@@ -314,30 +339,43 @@ Responde SOLO con JSON válido, sin texto adicional.`;
     } else {
       // Interpretar texto como calificación
       const lowerText = ratingText.toLowerCase();
-      if (lowerText.includes('excelente') || lowerText.includes('perfecto') || lowerText.includes('increíble')) {
+      if (
+        lowerText.includes('excelente') ||
+        lowerText.includes('perfecto') ||
+        lowerText.includes('increíble')
+      ) {
         numericRating = 5;
-      } else if (lowerText.includes('muy bien') || lowerText.includes('genial')) {
+      } else if (
+        lowerText.includes('muy bien') ||
+        lowerText.includes('genial')
+      ) {
         numericRating = 4;
       } else if (lowerText.includes('bien') || lowerText.includes('bueno')) {
         numericRating = 3;
-      } else if (lowerText.includes('regular') || lowerText.includes('normal')) {
+      } else if (
+        lowerText.includes('regular') ||
+        lowerText.includes('normal')
+      ) {
         numericRating = 2;
-      } else if (lowerText.includes('malo') || lowerText.includes('no me gusta')) {
+      } else if (
+        lowerText.includes('malo') ||
+        lowerText.includes('no me gusta')
+      ) {
         numericRating = 1;
       }
     }
 
     // Actualizar perfil con el feedback
     await updateUserProfile('', ratingText, numericRating);
-    
+
     // Actualizar calificaciones locales
     if (awaitingRating && numericRating) {
-      setUserProfile(prev => ({
+      setUserProfile((prev) => ({
         ...prev,
         location_ratings: {
           ...prev.location_ratings,
-          [awaitingRating]: numericRating
-        }
+          [awaitingRating]: numericRating,
+        },
       }));
     }
 
@@ -351,13 +389,15 @@ Responde SOLO con JSON válido, sin texto adicional.`;
       } else if (numericRating === 3) {
         thankYouText += 'Tomaré en cuenta tus comentarios para mejorar.';
       } else {
-        thankYouText += 'Lamento que no haya sido de tu agrado. La próxima vez te daré algo mejor.';
+        thankYouText +=
+          'Lamento que no haya sido de tu agrado. La próxima vez te daré algo mejor.';
       }
     } else {
       thankYouText += 'Tus comentarios me ayudan a conocerte mejor.';
     }
-    
-    thankYouText += '\n\n¿Hay algo más que quieras descubrir en Barranquilla? 🌴';
+
+    thankYouText +=
+      '\n\n¿Hay algo más que quieras descubrir en Barranquilla? 🌴';
 
     const thankYouMessage = {
       id: `thanks-${Date.now()}`,
@@ -367,7 +407,7 @@ Responde SOLO con JSON válido, sin texto adicional.`;
     };
 
     setTimeout(() => {
-      setMessages(prevMessages => [...prevMessages, thankYouMessage]);
+      setMessages((prevMessages) => [...prevMessages, thankYouMessage]);
     }, 1000);
   };
 
@@ -382,7 +422,7 @@ Responde SOLO con JSON válido, sin texto adicional.`;
       timestamp: new Date(),
     };
 
-    setMessages(prevMessages => [...prevMessages, userMessage]);
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
     const messageText = inputText;
     setInputText('');
 
@@ -399,7 +439,7 @@ Responde SOLO con JSON válido, sin texto adicional.`;
   // Función para abrir Google Maps
   const openGoogleMaps = (placeInfo) => {
     if (placeInfo && placeInfo.maps_url) {
-      Linking.openURL(placeInfo.maps_url).catch(err => {
+      Linking.openURL(placeInfo.maps_url).catch((err) => {
         console.error('Error opening maps:', err);
         Alert.alert('Error', 'No se pudo abrir Google Maps');
       });
@@ -409,26 +449,43 @@ Responde SOLO con JSON válido, sin texto adicional.`;
   // Renderizado de mensajes
   const renderItem = ({ item }) => {
     const isBot = item.sender === 'bot';
-    
+
     return (
-      <View style={[styles.messageBubbleContainer, isBot ? styles.botBubbleContainer : styles.userBubbleContainer]}>
-        <View style={[styles.messageBubble, isBot ? styles.botBubble : styles.userBubble]}>
-          <Text style={[styles.messageText, isBot ? styles.botText : styles.userText]}>
+      <View
+        style={[
+          styles.messageBubbleContainer,
+          isBot ? styles.botBubbleContainer : styles.userBubbleContainer,
+        ]}
+      >
+        <View
+          style={[
+            styles.messageBubble,
+            isBot ? styles.botBubble : styles.userBubble,
+          ]}
+        >
+          <Text
+            style={[
+              styles.messageText,
+              isBot ? styles.botText : styles.userText,
+            ]}
+          >
             {item.text}
           </Text>
-          
+
           {/* Mostrar imagen y botón de mapa si hay información del lugar */}
           {item.placeInfo && (
             <View style={styles.placeInfoContainer}>
               {item.placeInfo.photo_reference && (
-                <Image 
-                  source={{ uri: getPlacePhotoUrl(item.placeInfo.photo_reference) }}
+                <Image
+                  source={{
+                    uri: getPlacePhotoUrl(item.placeInfo.photo_reference),
+                  }}
                   style={styles.placeImage}
                   resizeMode="cover"
                 />
               )}
-              
-              <TouchableOpacity 
+
+              <TouchableOpacity
                 style={styles.mapsButton}
                 onPress={() => openGoogleMaps(item.placeInfo)}
               >
@@ -448,9 +505,11 @@ Responde SOLO con JSON válido, sin texto adicional.`;
         style={styles.header}
       >
         <Text style={styles.headerTitle}>Hang out</Text>
-        <Text style={styles.headerSubtitle}>Tu asistente turístico inteligente</Text>
+        <Text style={styles.headerSubtitle}>
+          Tu asistente turístico inteligente
+        </Text>
       </LinearGradient>
-      
+
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingView}
@@ -463,22 +522,40 @@ Responde SOLO con JSON válido, sin texto adicional.`;
             renderItem={renderItem}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.messageList}
-            onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
-            onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
+            onContentSizeChange={() =>
+              flatListRef.current?.scrollToEnd({ animated: true })
+            }
+            onLayout={() =>
+              flatListRef.current?.scrollToEnd({ animated: true })
+            }
           />
-          
+
           {isTyping && (
-            <View style={[styles.messageBubbleContainer, styles.botBubbleContainer]}>
-              <View style={[styles.messageBubble, styles.botBubble, styles.typingBubble]}>
+            <View
+              style={[styles.messageBubbleContainer, styles.botBubbleContainer]}
+            >
+              <View
+                style={[
+                  styles.messageBubble,
+                  styles.botBubble,
+                  styles.typingBubble,
+                ]}
+              >
                 <ActivityIndicator size="small" color="#ffffff" />
-                <Text style={[styles.messageText, styles.botText, styles.typingText]}>
+                <Text
+                  style={[
+                    styles.messageText,
+                    styles.botText,
+                    styles.typingText,
+                  ]}
+                >
                   Buscando el lugar perfecto...
                 </Text>
               </View>
             </View>
           )}
         </View>
-        
+
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
@@ -489,8 +566,11 @@ Responde SOLO con JSON válido, sin texto adicional.`;
             multiline
             disabled={isTyping}
           />
-          <TouchableOpacity 
-            style={[styles.sendButton, (isTyping || inputText.trim() === '') && styles.disabledButton]} 
+          <TouchableOpacity
+            style={[
+              styles.sendButton,
+              (isTyping || inputText.trim() === '') && styles.disabledButton,
+            ]}
             onPress={handleSendMessage}
             disabled={isTyping || inputText.trim() === ''}
           >

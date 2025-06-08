@@ -10,9 +10,9 @@ class GooglePlacesService {
       const response = await axios.get(
         `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=${radius}&key=${GOOGLE_API_KEY}`
       );
-      
+
       // Transformar los resultados de Google al formato de nuestra aplicación
-      const places = response.data.results.map(place => ({
+      const places = response.data.results.map((place) => ({
         id: place.place_id,
         name: place.name,
         category: place.types[0],
@@ -20,12 +20,13 @@ class GooglePlacesService {
         ratingCount: place.user_ratings_total || 0,
         description: '', // Google no proporciona descripciones en esta API
         address: place.vicinity,
-        imageUrl: place.photos && place.photos[0] 
-          ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=600&photoreference=${place.photos[0].photo_reference}&key=${GOOGLE_API_KEY}` 
-          : 'https://via.placeholder.com/600',
+        imageUrl:
+          place.photos && place.photos[0]
+            ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=600&photoreference=${place.photos[0].photo_reference}&key=${GOOGLE_API_KEY}`
+            : 'https://via.placeholder.com/600',
         matchingMoods: determineMoodsFromPlaceType(place.types),
       }));
-      
+
       return places;
     } catch (error) {
       console.error('Error fetching Google Places:', error);
@@ -39,9 +40,9 @@ class GooglePlacesService {
       const response = await axios.get(
         `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,rating,formatted_address,photos,types,reviews,price_level&key=${GOOGLE_API_KEY}`
       );
-      
+
       const place = response.data.result;
-      
+
       return {
         id: place.place_id,
         name: place.name,
@@ -50,9 +51,10 @@ class GooglePlacesService {
         ratingCount: place.user_ratings_total || 0,
         description: '', // Podríamos combinar reseñas para generar una descripción
         address: place.formatted_address,
-        imageUrl: place.photos && place.photos[0] 
-          ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=600&photoreference=${place.photos[0].photo_reference}&key=${GOOGLE_API_KEY}` 
-          : 'https://via.placeholder.com/600',
+        imageUrl:
+          place.photos && place.photos[0]
+            ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=600&photoreference=${place.photos[0].photo_reference}&key=${GOOGLE_API_KEY}`
+            : 'https://via.placeholder.com/600',
         matchingMoods: determineMoodsFromPlaceType(place.types),
         reviews: transformGoogleReviews(place.reviews),
         priceLevel: place.price_level,
@@ -87,22 +89,22 @@ function determineMoodsFromPlaceType(types) {
     zoo: ['happy', 'adventurous'],
     library: ['relaxed', 'creative'],
   };
-  
+
   let moods = new Set();
-  
-  types.forEach(type => {
+
+  types.forEach((type) => {
     if (moodMap[type]) {
-      moodMap[type].forEach(mood => moods.add(mood));
+      moodMap[type].forEach((mood) => moods.add(mood));
     }
   });
-  
+
   return Array.from(moods);
 }
 
 // Transformar reseñas de Google al formato de nuestra aplicación
 function transformGoogleReviews(googleReviews) {
   if (!googleReviews) return [];
-  
+
   return googleReviews.map((review, index) => ({
     id: `google_${index}`,
     userId: `google_user_${index}`,

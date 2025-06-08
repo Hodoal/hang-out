@@ -43,7 +43,10 @@ const ProfileScreen = () => {
         notifications,
         locationTracking,
       };
-      await AsyncStorage.setItem(`settings_${userId}`, JSON.stringify(settings));
+      await AsyncStorage.setItem(
+        `settings_${userId}`,
+        JSON.stringify(settings)
+      );
     } catch (error) {
       console.error('Error saving settings:', error);
     }
@@ -98,7 +101,12 @@ const ProfileScreen = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.headerContainer}>
-        <Icon name="person-circle-outline" type="ionicon" size={80} color="#ff6b6b" />
+        <Icon
+          name="person-circle-outline"
+          type="ionicon"
+          size={80}
+          color="#ff6b6b"
+        />
         <Text style={styles.anonymousText}>Usuario Anónimo</Text>
         <Text style={styles.userIdText}>ID: {userId.slice(0, 8)}...</Text>
       </View>
@@ -126,47 +134,59 @@ const ProfileScreen = () => {
             ))}
           </View>
         ) : (
-          <Text style={styles.emptyText}>Aún no tienes categorías favoritas</Text>
+          <Text style={styles.emptyText}>
+            Aún no tienes categorías favoritas
+          </Text>
         )}
 
-        <Text style={styles.subsectionTitle}>Tus Estados de Ánimo Preferidos</Text>
+        <Text style={styles.subsectionTitle}>
+          Tus Estados de Ánimo Preferidos
+        </Text>
         {userStats.preferredMoods.length > 0 ? (
           <View style={styles.tagsContainer}>
             {userStats.preferredMoods.map((mood, index) => (
               <View key={index} style={styles.tag}>
-                <Text style={styles.tagText}>{getMoodDisplayName(mood.name)}</Text>
+                <Text style={styles.tagText}>
+                  {getMoodDisplayName(mood.name)}
+                </Text>
               </View>
             ))}
           </View>
         ) : (
-          <Text style={styles.emptyText}>Aún no tienes estados de ánimo preferidos</Text>
+          <Text style={styles.emptyText}>
+            Aún no tienes estados de ánimo preferidos
+          </Text>
         )}
       </View>
 
       <View style={styles.settingsContainer}>
         <Text style={styles.sectionTitle}>Configuración</Text>
-        
+
         <ListItem bottomDivider>
           <ListItem.Content>
             <ListItem.Title>Notificaciones</ListItem.Title>
-            <ListItem.Subtitle>Recibir notificaciones de recomendaciones</ListItem.Subtitle>
+            <ListItem.Subtitle>
+              Recibir notificaciones de recomendaciones
+            </ListItem.Subtitle>
           </ListItem.Content>
           <Switch
             value={notifications}
             onValueChange={toggleNotifications}
-            trackColor={{ false: "#767577", true: "#4ecdc4" }}
+            trackColor={{ false: '#767577', true: '#4ecdc4' }}
           />
         </ListItem>
-        
+
         <ListItem bottomDivider>
           <ListItem.Content>
             <ListItem.Title>Seguimiento de ubicación</ListItem.Title>
-            <ListItem.Subtitle>Usar tu ubicación para recomendaciones</ListItem.Subtitle>
+            <ListItem.Subtitle>
+              Usar tu ubicación para recomendaciones
+            </ListItem.Subtitle>
           </ListItem.Content>
           <Switch
             value={locationTracking}
             onValueChange={toggleLocationTracking}
-            trackColor={{ false: "#767577", true: "#4ecdc4" }}
+            trackColor={{ false: '#767577', true: '#4ecdc4' }}
           />
         </ListItem>
       </View>
@@ -174,9 +194,10 @@ const ProfileScreen = () => {
       <View style={styles.privacyContainer}>
         <Text style={styles.sectionTitle}>Privacidad</Text>
         <Text style={styles.privacyText}>
-          Tus datos permanecen completamente anónimos. No almacenamos información personal que pueda identificarte directamente.
+          Tus datos permanecen completamente anónimos. No almacenamos
+          información personal que pueda identificarte directamente.
         </Text>
-        
+
         <Button
           title="Eliminar mis datos"
           type="outline"
@@ -186,7 +207,7 @@ const ProfileScreen = () => {
             name: 'delete',
             type: 'material',
             size: 20,
-            color: '#ff6b6b'
+            color: '#ff6b6b',
           }}
           onPress={clearUserData}
         />

@@ -2,84 +2,92 @@ const mongoose = require('mongoose');
 
 // Modelo de Usuario
 const userSchema = new mongoose.Schema({
-  name: { 
-    type: String, 
-    required: true 
+  name: {
+    type: String,
+    required: true,
   },
-  email: { 
-    type: String, 
-    required: true, 
+  email: {
+    type: String,
+    required: true,
     unique: true,
     trim: true,
-    lowercase: true
+    lowercase: true,
   },
-  password: { 
-    type: String, 
-    required: true 
+  password: {
+    type: String,
+    required: true,
   },
-  hasCompletedPreferences: { 
-    type: Boolean, 
-    default: false 
+  hasCompletedPreferences: {
+    type: Boolean,
+    default: false,
   },
-  createdAt: { 
-    type: Date, 
-    default: Date.now 
-  }
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 // Modelo de Preferencias
 const preferenceSchema = new mongoose.Schema({
-  userId: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'User', 
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     required: true,
-    unique: true
+    unique: true,
   },
-  moods: [{ 
-    type: String 
-  }],
-  placeTypes: [{ 
-    type: String 
-  }],
-  updatedAt: { 
-    type: Date, 
-    default: Date.now 
-  }
+  moods: [
+    {
+      type: String,
+    },
+  ],
+  placeTypes: [
+    {
+      type: String,
+    },
+  ],
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 // Modelo para lugares recomendados (para futura expansión)
 const placeSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true
+    required: true,
   },
   type: {
     type: String,
-    required: true
+    required: true,
   },
   location: {
     latitude: Number,
-    longitude: Number
+    longitude: Number,
   },
   address: String,
   rating: {
     type: Number,
     min: 0,
     max: 5,
-    default: 0
+    default: 0,
   },
-  recommendedFor: [{
-    type: String
-  }],
-  images: [{
-    url: String,
-    caption: String
-  }],
+  recommendedFor: [
+    {
+      type: String,
+    },
+  ],
+  images: [
+    {
+      url: String,
+      caption: String,
+    },
+  ],
   description: String,
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 // Modelo para las visitas de usuario (para futura expansión)
@@ -87,27 +95,27 @@ const visitSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: true,
   },
   placeId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Place',
-    required: true
+    required: true,
   },
   mood: {
     type: String,
-    required: true
+    required: true,
   },
   rating: {
     type: Number,
     min: 1,
-    max: 5
+    max: 5,
   },
   feedback: String,
   visitDate: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 const User = mongoose.model('User', userSchema);
@@ -119,5 +127,5 @@ module.exports = {
   User,
   Preference,
   Place,
-  Visit
+  Visit,
 };

@@ -1,0 +1,7 @@
+Flask>=2.0
+scikit-learn
+numpy
+
+# Linting and formatting tools
+flake8>=3.8.0
+black>=22.0.0

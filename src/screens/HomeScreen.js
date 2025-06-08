@@ -1,5 +1,11 @@
 import React, { useContext, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+} from 'react-native';
 import { Button, Card, SearchBar } from 'react-native-elements';
 import PlacesContext from '../context/PlacesContext';
 import PlacesService from '../services/PlacesService';
@@ -141,4 +147,3 @@ const styles = StyleSheet.create({
 });
 
 export default HomeScreen;
-

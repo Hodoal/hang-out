@@ -1,0 +1,6 @@
+[flake8]
+ignore = E501, W503
+# E501: line too long (Black will handle this)
+# W503: line break before binary operator (Black prefers this, Flake8 doesn't)
+max-line-length = 88
+exclude = .git,__pycache__,build,dist,*.egg-info

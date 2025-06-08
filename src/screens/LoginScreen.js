@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
-  ActivityIndicator, 
-  KeyboardAvoidingView, 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  KeyboardAvoidingView,
   Platform,
   Alert,
-  Image
+  Image,
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -28,21 +28,24 @@ const LoginScreen = ({ navigation }) => {
       Alert.alert('Error', 'Por favor complete todos los campos');
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       if (isLogin) {
         // Login
         const response = await axios.post(`${API_URL}/login`, {
           email,
-          password
+          password,
         });
-        
+
         // Guardar token y datos de usuario
         await AsyncStorage.setItem('userToken', response.data.token);
-        await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
-        
+        await AsyncStorage.setItem(
+          'userData',
+          JSON.stringify(response.data.user)
+        );
+
         // Verificar si el usuario ya completó sus preferencias
         if (response.data.user.hasCompletedPreferences) {
           navigation.replace('Home');
@@ -54,13 +57,16 @@ const LoginScreen = ({ navigation }) => {
         const response = await axios.post(`${API_URL}/register`, {
           name,
           email,
-          password
+          password,
         });
-        
+
         // Guardar token y datos de usuario
         await AsyncStorage.setItem('userToken', response.data.token);
-        await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
-        
+        await AsyncStorage.setItem(
+          'userData',
+          JSON.stringify(response.data.user)
+        );
+
         // Ir a configuración de preferencias
         navigation.replace('PreferencesSetup');
       }
@@ -84,24 +90,24 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
       <View style={styles.logoContainer}>
-        <Image 
-          source={require('../assets/logo.png')} 
+        <Image
+          source={require('../assets/logo.png')}
           style={styles.logo}
           resizeMode="contain"
         />
         <Text style={styles.appName}>TravelMood</Text>
       </View>
-      
+
       <View style={styles.formContainer}>
         <Text style={styles.title}>
           {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
         </Text>
-        
+
         {!isLogin && (
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Nombre</Text>
@@ -114,7 +120,7 @@ const LoginScreen = ({ navigation }) => {
             />
           </View>
         )}
-        
+
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Email</Text>
           <TextInput
@@ -126,7 +132,7 @@ const LoginScreen = ({ navigation }) => {
             autoCapitalize="none"
           />
         </View>
-        
+
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Contraseña</Text>
           <TextInput
@@ -137,8 +143,8 @@ const LoginScreen = ({ navigation }) => {
             secureTextEntry
           />
         </View>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={styles.authButton}
           onPress={handleAuth}
           disabled={loading}
@@ -151,13 +157,12 @@ const LoginScreen = ({ navigation }) => {
             </Text>
           )}
         </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.toggleButton}
-          onPress={toggleAuthMode}
-        >
+
+        <TouchableOpacity style={styles.toggleButton} onPress={toggleAuthMode}>
           <Text style={styles.toggleButtonText}>
-            {isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión'}
+            {isLogin
+              ? '¿No tienes cuenta? Regístrate'
+              : '¿Ya tienes cuenta? Inicia sesión'}
           </Text>
         </TouchableOpacity>
       </View>

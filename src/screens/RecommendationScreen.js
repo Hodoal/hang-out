@@ -1,5 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+} from 'react-native';
 import { Button, Card, Rating } from 'react-native-elements';
 import PlacesContext from '../context/PlacesContext';
 import AuthContext from '../context/AuthContext';
@@ -35,11 +41,11 @@ const RecommendationScreen = ({ navigation }) => {
     try {
       await PlacesService.provideFeedback(placeId, userId, liked);
       // Actualizar la lista después del feedback
-      const updatedRecommendations = recommendations.map(place => {
+      const updatedRecommendations = recommendations.map((place) => {
         if (place.id === placeId) {
           return {
             ...place,
-            userFeedback: liked ? 'liked' : 'disliked'
+            userFeedback: liked ? 'liked' : 'disliked',
           };
         }
         return place;
@@ -72,17 +78,20 @@ const RecommendationScreen = ({ navigation }) => {
           type={item.userFeedback === 'liked' ? 'solid' : 'outline'}
           buttonStyle={[
             styles.feedbackButton,
-            { backgroundColor: item.userFeedback === 'liked' ? '#4CAF50' : 'white' }
+            {
+              backgroundColor:
+                item.userFeedback === 'liked' ? '#4CAF50' : 'white',
+            },
           ]}
           titleStyle={{
-            color: item.userFeedback === 'liked' ? 'white' : '#4CAF50'
+            color: item.userFeedback === 'liked' ? 'white' : '#4CAF50',
           }}
           onPress={() => handleFeedback(item.id, true)}
           icon={{
             name: 'thumb-up',
             type: 'material',
             color: item.userFeedback === 'liked' ? 'white' : '#4CAF50',
-            size: 16
+            size: 16,
           }}
         />
         <Button
@@ -90,17 +99,20 @@ const RecommendationScreen = ({ navigation }) => {
           type={item.userFeedback === 'disliked' ? 'solid' : 'outline'}
           buttonStyle={[
             styles.feedbackButton,
-            { backgroundColor: item.userFeedback === 'disliked' ? '#F44336' : 'white' }
+            {
+              backgroundColor:
+                item.userFeedback === 'disliked' ? '#F44336' : 'white',
+            },
           ]}
           titleStyle={{
-            color: item.userFeedback === 'disliked' ? 'white' : '#F44336'
+            color: item.userFeedback === 'disliked' ? 'white' : '#F44336',
           }}
           onPress={() => handleFeedback(item.id, false)}
           icon={{
             name: 'thumb-down',
             type: 'material',
             color: item.userFeedback === 'disliked' ? 'white' : '#F44336',
-            size: 16
+            size: 16,
           }}
         />
       </View>
@@ -111,9 +123,11 @@ const RecommendationScreen = ({ navigation }) => {
     <View style={styles.container}>
       <Text style={styles.title}>
         Recomendaciones para cuando te sientes{' '}
-        <Text style={styles.moodHighlight}>{getMoodDisplayName(preferences.mood)}</Text>
+        <Text style={styles.moodHighlight}>
+          {getMoodDisplayName(preferences.mood)}
+        </Text>
       </Text>
-      
+
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />
       ) : (

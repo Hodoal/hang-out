@@ -1,21 +1,41 @@
-
 import React, { useContext } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 import { Icon } from 'react-native-elements';
 import PlacesContext from '../context/PlacesContext';
 
 const MoodSelectionScreen = ({ navigation }) => {
   const { preferences, setPreferences } = useContext(PlacesContext);
-  
+
   const moods = [
-    { id: 'happy', label: 'Feliz', icon: 'sentiment-very-satisfied', color: '#FFDE03' },
+    {
+      id: 'happy',
+      label: 'Feliz',
+      icon: 'sentiment-very-satisfied',
+      color: '#FFDE03',
+    },
     { id: 'relaxed', label: 'Relajado', icon: 'spa', color: '#0336FF' },
     { id: 'romantic', label: 'Romántico', icon: 'favorite', color: '#FF0266' },
-    { id: 'adventurous', label: 'Aventurero', icon: 'terrain', color: '#00C853' },
+    {
+      id: 'adventurous',
+      label: 'Aventurero',
+      icon: 'terrain',
+      color: '#00C853',
+    },
     { id: 'hungry', label: 'Hambriento', icon: 'restaurant', color: '#FF3D00' },
     { id: 'social', label: 'Social', icon: 'people', color: '#AA00FF' },
     { id: 'creative', label: 'Creativo', icon: 'palette', color: '#2979FF' },
-    { id: 'stressed', label: 'Estresado', icon: 'sentiment-very-dissatisfied', color: '#FF6D00' },
+    {
+      id: 'stressed',
+      label: 'Estresado',
+      icon: 'sentiment-very-dissatisfied',
+      color: '#FF6D00',
+    },
   ];
 
   const handleMoodSelection = (moodId) => {
@@ -43,7 +63,7 @@ const MoodSelectionScreen = ({ navigation }) => {
       <Text style={styles.subtitle}>
         Selecciona un estado de ánimo y te recomendaremos lugares acordes
       </Text>
-      
+
       <ScrollView contentContainerStyle={styles.moodGrid}>
         {moods.map(renderMoodItem)}
       </ScrollView>
