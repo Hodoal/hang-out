@@ -443,14 +443,6 @@ Responde SOLO con JSON válido, sin texto adicional.`;
 
   return (
     <SafeAreaView style={styles.container}>
-      <LinearGradient
-        colors={['#FF6B35', '#F7931E', '#FFD23F']}
-        style={styles.header}
-      >
-        <Text style={styles.headerTitle}>Hang out</Text>
-        <Text style={styles.headerSubtitle}>Tu asistente turístico inteligente</Text>
-      </LinearGradient>
-      
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingView}
