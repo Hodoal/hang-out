@@ -88,4 +88,4 @@ def get_profile(user_id):
 if __name__ == "__main__":
     # Make sure to adjust host and port as needed for your environment
     # Using 0.0.0.0 to be accessible externally if running in a container/VM
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=6000, debug=True)

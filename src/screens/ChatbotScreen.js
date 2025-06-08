@@ -20,9 +20,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 // APIs Configuration
 const OPENROUTER_API_KEY =
-  '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';
+  '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';
 const GOOGLE_MAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY'; // Reemplazar con tu API key
-const NLP_SERVER_URL = 'http://localhost:5000'; // Updated port for Flask NLP service
+const NLP_SERVER_URL = 'http://localhost:6000'; // Updated port for Flask NLP service
 const SITE_URL = 'barranquilla-guide.com';
 const SITE_NAME = 'Guía Barranquilla';
 
@@ -521,16 +521,6 @@ Responde SOLO con JSON válido, sin texto adicional.`;
 
   return (
     <SafeAreaView style={styles.container}>
-      <LinearGradient
-        colors={['#FF6B35', '#F7931E', '#FFD23F']}
-        style={styles.header}
-      >
-        <Text style={styles.headerTitle}>Hang out</Text>
-        <Text style={styles.headerSubtitle}>
-          Tu asistente turístico inteligente
-        </Text>
-      </LinearGradient>
-
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingView}
