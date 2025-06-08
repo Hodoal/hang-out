@@ -18,7 +18,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 
 // APIs Configuration
-const OPENROUTER_API_KEY = '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';
+const OPENROUTER_API_KEY = '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';
 const GOOGLE_MAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY'; // Reemplazar con tu API key
 const NLP_SERVER_URL = 'http://localhost:8080'; // URL del servidor Python
 const SITE_URL = 'barranquilla-guide.com';
