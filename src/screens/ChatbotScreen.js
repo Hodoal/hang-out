@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTheme } from "../context/ThemeContext";
 import {
   View,
   Text,
@@ -16,11 +17,10 @@ import {
   Alert,
 } from 'react-native';
 import Markdown from "react-native-markdown-display";
-import { LinearGradient } from 'expo-linear-gradient';
+import Icon from "react-native-vector-icons/Ionicons";
 
 // APIs Configuration
-const OPENROUTER_API_KEY =
-  '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';
+const OPENROUTER_API_KEY ='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';
 const GOOGLE_MAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY'; // Reemplazar con tu API key
 const NLP_SERVER_URL = 'http://localhost:6000'; // Updated port for Flask NLP service
 const SITE_URL = 'barranquilla-guide.com';
@@ -51,18 +51,87 @@ const ChatbotBarranquilla = () => {
 
   const flatListRef = useRef(null);
 
+  const { theme, colors, setTheme } = useTheme();
+
+  const getDynamicStyles = (colors) => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    keyboardAvoidingView: { flex: 1 },
+    header: {
+      paddingVertical: 20, paddingHorizontal: 20,
+      borderBottomLeftRadius: 25, borderBottomRightRadius: 25,
+      elevation: 8, shadowColor: '#000', // Shadow might need theme adjustment too
+      shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 4.65,
+      // backgroundColor: colors.headerBackground, // For solid, if gradient not themed yet
+    },
+    headerTitle: { color: colors.headerText, fontSize: 26, fontWeight: "bold", textAlign: "center" },
+    headerSubtitle: { color: colors.headerText, fontSize: 14, textAlign: "center", marginTop: 5, opacity: 0.9 },
+    chatContainer: { flex: 1, paddingHorizontal: 15 },
+    messageList: { paddingTop: 20, paddingBottom: 10 },
+    messageBubbleContainer: { flexDirection: "row", marginBottom: 15, paddingHorizontal: 5 },
+    botBubbleContainer: { justifyContent: "flex-start" },
+    userBubbleContainer: { justifyContent: "flex-end" },
+    messageBubble: {
+      maxWidth: BUBBLE_MAX_WIDTH,
+      paddingHorizontal: 14, // Slightly adjusted padding
+      paddingVertical: 10,   // Slightly adjusted padding
+      elevation: 1, // Reduced elevation for a flatter look if desired, or keep original
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 }, // Softer shadow
+      shadowOpacity: 0.1,
+      shadowRadius: 1.5,
+      // General borderRadius, specific corners will be overridden by bot/user styles
+      borderRadius: 18, // General rounding
+    },
+    botBubble: {
+      backgroundColor: colors.botBubbleBackground,
+      borderTopRightRadius: 18,
+      borderBottomRightRadius: 18,
+      borderTopLeftRadius: 18, // Keep this more rounded
+      borderBottomLeftRadius: 4, // Less rounded on the side it points from (left)
+      marginRight: 'auto', // Ensures it stays left
+    },
+    userBubble: {
+      backgroundColor: colors.userBubbleBackground,
+      borderTopLeftRadius: 18,
+      borderBottomLeftRadius: 18,
+      borderTopRightRadius: 18, // Keep this more rounded
+      borderBottomRightRadius: 4, // Less rounded on the side it points from (right)
+      marginLeft: 'auto', // Ensures it stays right
+    },
+    messageText: { fontSize: 16, lineHeight: 22 }, // Color will be from markdownStyle or userText
+    botText: { color: colors.botBubbleText }, // Used if not markdown
+    userText: { color: colors.userBubbleText },
+    typingBubble: { flexDirection: "row", alignItems: "center", paddingVertical: 15 },
+    typingText: { marginLeft: 10, color: colors.botBubbleText }, // Assuming typing bubble is like bot bubble
+    placeInfoContainer: { marginTop: 12, borderRadius: 12, overflow: "hidden" },
+    placeImage: { width: "100%", height: 160, borderRadius: 12, marginBottom: 8 },
+    mapsButton: { backgroundColor: "rgba(255, 255, 255, 0.9)", paddingVertical: 8, paddingHorizontal: 12, borderRadius: 20, alignItems: "center" }, // May need theme
+    mapsButtonText: { color: colors.primary, fontSize: 14, fontWeight: "bold" },
+    inputContainer: { flexDirection: "row", padding: 15, backgroundColor: colors.inputBackground, borderTopWidth: 1, borderTopColor: theme === "light" ? "#e9ecef" : "#333333", alignItems: "center" }, // Conditional border
+    input: { flex: 1, backgroundColor: colors.inputBackground, color: colors.inputTextColor, paddingHorizontal: 16, paddingVertical: Platform.OS === "ios" ? 12 : 8, borderRadius: 25, maxHeight: 120, fontSize: 16, borderWidth: 1, borderColor: theme === "light" ? "#e9ecef" : "#333333", marginRight: 0 },
+    sendButton: { marginLeft: 12, backgroundColor: colors.buttonBackground, width: 50, height: 50, borderRadius: 25, justifyContent: "center", alignItems: "center", elevation: 3, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84 },
+    disabledButton: { backgroundColor: colors.disabledButtonBackground, elevation: 0 },
+    themeToggleButton: { position: "absolute", top: Platform.OS === 'android' ? 20 : 60, right: 10, padding: 10, backgroundColor: colors.primary, borderRadius: 5, zIndex: 1000 },
+    themeToggleButtonText: { color: colors.buttonIconColor }
+  });
+
+  const styles = getDynamicStyles(colors);
+
   const markdownStyle = {
-    body: { color: '#ffffff', fontSize: 16 }, // Matches botText color and approximate size
-    heading1: { fontSize: 22, fontWeight: 'bold', color: '#ffffff', marginVertical: 5 },
-    heading2: { fontSize: 20, fontWeight: 'bold', color: '#ffffff', marginVertical: 4 },
-    strong: { fontWeight: 'bold', color: '#ffffff' },
-    em: { fontStyle: 'italic', color: '#ffffff' },
-    bullet_list: { color: '#ffffff' },
-    ordered_list: { color: '#ffffff' },
-    list_item: { marginVertical: 2, color: '#ffffff' },
-    link: { color: '#E0F7FA', textDecorationLine: 'underline' }, // A slightly different color for links
-    text: { color: '#ffffff' }, // Default text color within markdown
-    paragraph: { marginTop: 5, marginBottom: 5, color: '#ffffff' }
+    body: { color: colors.botBubbleText, fontSize: 16 },
+    heading1: { fontSize: 22, fontWeight: 'bold', color: colors.botBubbleText, marginVertical: 5 },
+    heading2: { fontSize: 20, fontWeight: 'bold', color: colors.botBubbleText, marginVertical: 4 },
+    strong: { fontWeight: 'bold', color: colors.botBubbleText },
+    em: { fontStyle: 'italic', color: colors.botBubbleText },
+    bullet_list: { color: colors.botBubbleText },
+    ordered_list: { color: colors.botBubbleText },
+    list_item: { marginVertical: 2, color: colors.botBubbleText },
+    link: { color: colors.markdownLink, textDecorationLine: 'underline' },
+    text: { color: colors.botBubbleText }, // Default text color within markdown
+    paragraph: { marginTop: 5, marginBottom: 5, color: colors.botBubbleText }
   };
 
   useEffect(() => {
@@ -521,6 +590,10 @@ Responde SOLO con JSON válido, sin texto adicional.`;
 
   return (
     <SafeAreaView style={styles.container}>
+      <TouchableOpacity onPress={() => setTheme(theme === 'light' ? 'dark' : 'light')} style={styles.themeToggleButton}>
+        <Text style={styles.themeToggleButtonText}>Tema</Text>
+      </TouchableOpacity>
+
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingView}
@@ -588,7 +661,7 @@ Responde SOLO con JSON válido, sin texto adicional.`;
             {isTyping ? (
               <ActivityIndicator size="small" color="#ffffff" />
             ) : (
-              <Text style={styles.sendButtonText}>Enviar</Text>
+              <Icon name="paper-plane-outline" size={24} color="#ffffff" />
             )}
           </TouchableOpacity>
         </View>
@@ -714,30 +787,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#e9ecef',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
+    alignItems: 'center',
   },
   input: {
     flex: 1,
     backgroundColor: '#f8f9fa',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: Platform.OS === 'ios' ? 12 : 8,
     borderRadius: 25,
     maxHeight: 120,
     fontSize: 16,
     borderWidth: 1,
     borderColor: '#e9ecef',
+    marginRight: 0,
   },
   sendButton: {
     marginLeft: 12,
     backgroundColor: '#FF6B35',
-    width: 60,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 25,
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -748,11 +819,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccc',
     elevation: 0,
   },
-  sendButtonText: {
+  sendButtonText: { // This style might no longer be used if Text is removed
     color: '#ffffff',
     fontWeight: 'bold',
     fontSize: 14,
-  },
+  }
 });
 
 export default ChatbotBarranquilla;

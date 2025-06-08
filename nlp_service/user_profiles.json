@@ -3,82 +3,62 @@
     "preferences": [],
     "mood_history": [
       {
-        "mood": "relajado",
-        "confidence": 0.37331883808467897,
-        "timestamp": "2025-06-08T11:47:57.361566"
-      },
-      {
-        "mood": "aventurero",
-        "confidence": 0.21552351972093312,
-        "timestamp": "2025-06-08T11:48:32.089311"
+        "mood": "energetico",
+        "confidence": 0.6521882345611735,
+        "timestamp": "2025-06-08T12:16:30.898278"
       },
       {
         "mood": "energetico",
-        "confidence": 0.6521882345611735,
-        "timestamp": "2025-06-08T12:00:25.693657"
+        "confidence": 0.3937312225215186,
+        "timestamp": "2025-06-08T12:27:44.666792"
       },
       {
-        "mood": "aventurero",
-        "confidence": 0.21552351972093312,
-        "timestamp": "2025-06-08T12:02:04.977916"
+        "mood": "estresado",
+        "confidence": 0.538182485254152,
+        "timestamp": "2025-06-08T12:29:50.453325"
       },
       {
-        "mood": "aventurero",
-        "confidence": 0.21552351972093312,
-        "timestamp": "2025-06-08T12:03:13.241204"
-      },
-      {
-        "mood": "relajado",
-        "confidence": 0.19753706185629477,
-        "timestamp": "2025-06-08T12:04:49.359878"
+        "mood": "estresado",
+        "confidence": 0.538182485254152,
+        "timestamp": "2025-06-08T12:30:06.179147"
       }
     ],
     "location_ratings": {},
-    "conversation_count": 6,
+    "conversation_count": 4,
     "avg_rating": 0.0,
-    "favorite_categories": [
-      "comer"
-    ],
+    "favorite_categories": [],
     "last_interactions": [
       {
-        "message": "",
-        "mood": "aventurero",
-        "intent": "comer",
-        "feedback": "5",
-        "rating": 5,
-        "timestamp": "2025-06-08T11:48:32.089331"
-      },
-      {
-        "message": "Hola, me siento triste \n",
+        "message": "Hola, me siento aburrido ",
         "mood": "energetico",
         "intent": "comer",
         "feedback": null,
         "rating": null,
-        "timestamp": "2025-06-08T12:00:25.694148"
+        "timestamp": "2025-06-08T12:16:30.898331"
       },
       {
-        "message": "Hola\n",
-        "mood": "aventurero",
+        "message": "Hola, me siento aburrido, quiero encontrarme con la naturaleza ",
+        "mood": "energetico",
+        "intent": "naturaleza",
+        "feedback": null,
+        "rating": null,
+        "timestamp": "2025-06-08T12:27:44.666824"
+      },
+      {
+        "message": "Hola, estoy aburrido",
+        "mood": "estresado",
         "intent": "comer",
         "feedback": null,
         "rating": null,
-        "timestamp": "2025-06-08T12:02:04.978030"
+        "timestamp": "2025-06-08T12:29:50.453397"
       },
       {
-        "message": "Hola",
-        "mood": "aventurero",
+        "message": "Hola estoy aburrido",
+        "mood": "estresado",
         "intent": "comer",
         "feedback": null,
         "rating": null,
-        "timestamp": "2025-06-08T12:03:13.241238"
-      },
-      {
-        "message": "Hola, me siento triste, quiero encontrar un lugar para pasar el rato",
-        "mood": "relajado",
-        "intent": "descanso",
-        "feedback": null,
-        "rating": null,
-        "timestamp": "2025-06-08T12:04:49.359952"
+        "timestamp": "2025-06-08T12:30:06.179169"
       }
     ]
   }

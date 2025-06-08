@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MainNavigator from './src/navigation/MainNavigator';
 import AuthContext from './src/context/AuthContext';
 import PlacesContext from './src/context/PlacesContext';
+import { ThemeProvider } from './src/context/ThemeContext';
 
 const Stack = createStackNavigator();
 
@@ -27,21 +28,23 @@ export default function App() {
   }, [userId]);
 
   return (
-    <SafeAreaProvider>
-      <AuthContext.Provider value={{ userId, setUserId }}>
-        <PlacesContext.Provider
-          value={{
-            places,
-            setPlaces,
-            preferences,
-            setPreferences,
-          }}
-        >
-          <NavigationContainer>
-            <MainNavigator />
-          </NavigationContainer>
-        </PlacesContext.Provider>
-      </AuthContext.Provider>
-    </SafeAreaProvider>
+    <ThemeProvider>
+      <SafeAreaProvider>
+        <AuthContext.Provider value={{ userId, setUserId }}>
+          <PlacesContext.Provider
+            value={{
+              places,
+              setPlaces,
+              preferences,
+              setPreferences,
+            }}
+          >
+            <NavigationContainer>
+              <MainNavigator />
+            </NavigationContainer>
+          </PlacesContext.Provider>
+        </AuthContext.Provider>
+      </SafeAreaProvider>
+    </ThemeProvider>
   );
 }
