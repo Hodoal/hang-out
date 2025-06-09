@@ -3,31 +3,6 @@
     "preferences": [],
     "mood_history": [
       {
-        "mood": "energetico",
-        "confidence": 0.6521882345611735,
-        "timestamp": "2025-06-08T12:52:55.507933"
-      },
-      {
-        "mood": "aventurero",
-        "confidence": 0.21552351972093312,
-        "timestamp": "2025-06-08T12:58:36.096880"
-      },
-      {
-        "mood": "energetico",
-        "confidence": 0.3699583419188953,
-        "timestamp": "2025-06-08T13:16:56.502073"
-      },
-      {
-        "mood": "aventurero",
-        "confidence": 0.21552351972093312,
-        "timestamp": "2025-06-08T13:17:53.290515"
-      },
-      {
-        "mood": "aventurero",
-        "confidence": 0.21552351972093312,
-        "timestamp": "2025-06-08T13:18:00.558822"
-      },
-      {
         "mood": "aventurero",
         "confidence": 0.21552351972093312,
         "timestamp": "2025-06-08T13:18:12.606576"
@@ -51,54 +26,79 @@
         "mood": "estresado",
         "confidence": 0.3228536276423059,
         "timestamp": "2025-06-08T19:22:59.035415"
+      },
+      {
+        "mood": "energetico",
+        "confidence": 0.6732947664858723,
+        "timestamp": "2025-06-09T08:13:12.197964"
+      },
+      {
+        "mood": "energetico",
+        "confidence": 0.2904745197882397,
+        "timestamp": "2025-06-09T08:15:52.444606"
+      },
+      {
+        "mood": "aventurero",
+        "confidence": 0.21552351972093312,
+        "timestamp": "2025-06-09T08:17:03.286573"
+      },
+      {
+        "mood": "relajado",
+        "confidence": 0.37331883808467897,
+        "timestamp": "2025-06-09T08:17:16.561362"
+      },
+      {
+        "mood": "aventurero",
+        "confidence": 0.21552351972093312,
+        "timestamp": "2025-06-09T08:19:18.873626"
       }
     ],
     "location_ratings": {},
-    "conversation_count": 15,
+    "conversation_count": 20,
     "avg_rating": 0.0,
     "favorite_categories": [
       "comer"
     ],
     "last_interactions": [
       {
-        "message": "Hola",
-        "mood": "aventurero",
-        "intent": "comer",
-        "feedback": null,
-        "rating": null,
-        "timestamp": "2025-06-08T13:18:12.606635"
-      },
-      {
-        "message": "Hola",
-        "mood": "aventurero",
-        "intent": "comer",
-        "feedback": null,
-        "rating": null,
-        "timestamp": "2025-06-08T13:18:50.677967"
-      },
-      {
-        "message": "Hola, estoy aburrido ",
-        "mood": "estresado",
-        "intent": "comer",
-        "feedback": null,
-        "rating": null,
-        "timestamp": "2025-06-08T13:19:52.671044"
-      },
-      {
-        "message": "Hola, me siento estresado, estoy programando y no para de salir errores, quiero relajarme un poco, que me recomiendas? ",
+        "message": "Hola, me siento aburrido, quiero irme de culeteo en barrranquilla ",
         "mood": "energetico",
-        "intent": "descanso",
+        "intent": "compras",
         "feedback": null,
         "rating": null,
-        "timestamp": "2025-06-08T19:15:44.753728"
+        "timestamp": "2025-06-09T08:13:12.197996"
       },
       {
-        "message": "Hola, me siento estresado, he pasado todo el día programando, quiero tomarme un cafe y relajarme ",
-        "mood": "estresado",
+        "message": "Hola, me siento aburrido, quiero irme de culeteo en la ciudad ",
+        "mood": "energetico",
+        "intent": "cultura",
+        "feedback": null,
+        "rating": null,
+        "timestamp": "2025-06-09T08:15:52.445173"
+      },
+      {
+        "message": "",
+        "mood": "aventurero",
+        "intent": "comer",
+        "feedback": "5",
+        "rating": 5,
+        "timestamp": "2025-06-09T08:17:03.286614"
+      },
+      {
+        "message": "Quiero un lugar para leer y tomar café",
+        "mood": "relajado",
         "intent": "descanso",
         "feedback": null,
         "rating": null,
-        "timestamp": "2025-06-08T19:22:59.035925"
+        "timestamp": "2025-06-09T08:17:16.561374"
+      },
+      {
+        "message": "",
+        "mood": "aventurero",
+        "intent": "comer",
+        "feedback": "1",
+        "rating": 1,
+        "timestamp": "2025-06-09T08:19:18.873702"
       }
     ]
   }
