@@ -1,5 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import GeoapifyService from './GeoapifyService';
+import OpenCageDataService from './OpenCageDataService';
 
 // Configuración de la API de Foursquare
 const FOURSQUARE_API_KEY = 'fsq37BHNc1hwc8F7vuLO+tXjE8vck+JuJzkiLyGtRBPabUc='; // Reemplazar con tu API key de Foursquare
@@ -23,70 +25,234 @@ const moodToCategoryMap = {
   'stressed': ['11086', '10000', '14000'] // Spa, arte, fitness
 };
 
+// Helper function to calculate distance (Haversine formula)
+const getDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Radius of the earth in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c * 1000; // Distance in meters
+  return distance;
+};
+
 class PlacesService {
-  // Obtener lugares populares
-  static async getPopularPlaces() {
-    try {
-      const response = await axios.get(`${FOURSQUARE_BASE_URL}/places/search`, {
-        headers: foursquareHeaders,
-        params: {
-          sort: 'POPULARITY',
-          limit: 10
+  static _deDuplicatePlaces(placesArray) {
+    const uniquePlaces = [];
+    const ids = new Set();
+    const nameCoordKeys = new Set(); // For places without stable IDs or from different sources
+
+    for (const place of placesArray) {
+      if (place.error) continue; // Skip error objects
+
+      let uniqueKey;
+      if (place.id && !ids.has(place.id)) {
+        ids.add(place.id);
+        uniquePlaces.push(place);
+        // Add a name-coord key as well to catch duplicates with different IDs but same location/name
+        if (place.name && place.latitude && place.longitude) {
+           const name = place.name.toLowerCase().trim();
+           const lat = parseFloat(place.latitude).toFixed(4); // Rounded to ~10m precision
+           const lon = parseFloat(place.longitude).toFixed(4);
+           nameCoordKeys.add(`${name}-${lat}-${lon}`);
         }
-      });
-      
-      return this._formatPlacesResponse(response.data.results);
+      } else if (place.name && place.latitude && place.longitude) {
+        const name = place.name.toLowerCase().trim();
+        // Round coordinates to ~4 decimal places (approx 10-meter precision) for comparison
+        const lat = parseFloat(place.latitude).toFixed(4);
+        const lon = parseFloat(place.longitude).toFixed(4);
+        uniqueKey = `${name}-${lat}-${lon}`;
+
+        if (!nameCoordKeys.has(uniqueKey)) {
+          nameCoordKeys.add(uniqueKey);
+          // If ID was already present but this is a different place by name/coords, add it.
+          // Or if ID was missing.
+          if (!place.id || !ids.has(place.id)) {
+             uniquePlaces.push(place);
+             if(place.id) ids.add(place.id); // Add ID if it exists
+          } else {
+            // If ID exists and was already added, but this one has a slightly different name/coords key,
+            // we need to check if it's a true duplicate or a distinct place from a different source.
+            // For simplicity, if ID is already processed, we assume it's a duplicate for now.
+            // More sophisticated logic could compare distances.
+          }
+        }
+      } else {
+        // If no ID and no sufficient name/coordinate data, we cannot reliably deduplicate.
+        // Add it, or decide on a strategy (e.g. skip if name is missing)
+        // For now, adding if it has a name.
+        if (place.name) {
+            uniquePlaces.push(place);
+        }
+      }
+    }
+    return uniquePlaces;
+  }
+  // Obtener lugares populares
+  static async getPopularPlaces(location = null) {
+    let popularPlaces = [];
+    try {
+      if (location && location.latitude && location.longitude) {
+        // Fetch from Geoapify if location is provided
+        const geoapifyPopular = await GeoapifyService.searchPlaces(
+          null, // No specific search text, rely on categories and location
+          location,
+          ['tourism', 'entertainment', 'catering', 'landmark', 'accommodation.hotel'] // Broader categories for popular
+        );
+        if (geoapifyPopular && !geoapifyPopular.error) {
+          popularPlaces = popularPlaces.concat(geoapifyPopular);
+        }
+      } else {
+        // Fallback to Foursquare if no location or if Geoapify fails (though Geoapify handles its own errors)
+        const response = await axios.get(`${FOURSQUARE_BASE_URL}/places/search`, {
+          headers: foursquareHeaders,
+          params: {
+            sort: 'POPULARITY',
+            limit: 10
+          }
+        });
+        if (response.data && response.data.results) {
+          popularPlaces = popularPlaces.concat(this._formatPlacesResponse(response.data.results));
+        }
+      }
+      return this._deDuplicatePlaces(popularPlaces);
     } catch (error) {
-      console.error('Error fetching popular places:', error);
-      return [];
+      console.error('Error fetching popular places:', error.response ? error.response.data : error.message);
+      return []; // Return empty or an error object
     }
   }
 
   // Buscar lugares por término
-  static async searchPlaces(searchTerm) {
-    try {
-      const response = await axios.get(`${FOURSQUARE_BASE_URL}/places/search`, {
-        headers: foursquareHeaders,
-        params: {
-          query: searchTerm,
-          limit: 15
-        }
-      });
-      
-      return this._formatPlacesResponse(response.data.results);
-    } catch (error) {
-      console.error('Error searching places:', error);
-      return [];
+  static async searchPlaces(searchTerm, location = null) {
+    let allResults = [];
+    const services = [
+      { name: 'Foursquare', service: axios.get, paramsKey: 'fsq' },
+      { name: 'Geoapify', service: GeoapifyService.searchPlaces, paramsKey: 'geo' },
+      { name: 'OpenCageData', service: OpenCageDataService.searchPlaces, paramsKey: 'ocd' }
+    ];
+
+    const fsqParams = {
+      query: searchTerm,
+      limit: 15
+    };
+    if (location && location.latitude && location.longitude) {
+      fsqParams.ll = `${location.latitude},${location.longitude}`;
     }
+
+    try {
+      const fsqResponse = await axios.get(`${FOURSQUARE_BASE_URL}/places/search`, {
+        headers: foursquareHeaders,
+        params: fsqParams
+      });
+      if (fsqResponse.data && fsqResponse.data.results) {
+        allResults = allResults.concat(this._formatPlacesResponse(fsqResponse.data.results));
+      }
+    } catch (error) {
+      console.error('Error searching Foursquare:', error.response ? error.response.data : error.message);
+    }
+
+    try {
+      const geoapifyResults = await GeoapifyService.searchPlaces(searchTerm, location);
+      if (geoapifyResults && !geoapifyResults.error) {
+        allResults = allResults.concat(geoapifyResults);
+      } else if (geoapifyResults && geoapifyResults.error) {
+        console.error('Error searching Geoapify:', geoapifyResults.message);
+      }
+    } catch (error) { // Catch errors if GeoapifyService itself throws
+        console.error('Error calling GeoapifyService.searchPlaces:', error.message);
+    }
+
+    try {
+      const openCageResults = await OpenCageDataService.searchPlaces(searchTerm, location);
+      if (openCageResults && !openCageResults.error) {
+        allResults = allResults.concat(openCageResults);
+      } else if (openCageResults && openCageResults.error) {
+        console.error('Error searching OpenCageData:', openCageResults.message);
+      }
+    } catch (error) { // Catch errors if OpenCageDataService itself throws
+        console.error('Error calling OpenCageDataService.searchPlaces:', error.message);
+    }
+
+    return this._deDuplicatePlaces(allResults);
   }
 
   // Obtener recomendaciones basadas en estado de ánimo
-  static async getRecommendationsByMood(mood, userId) {
-    try {
-      // Obtener las categorías relacionadas con el estado de ánimo
-      const categories = moodToCategoryMap[mood.toLowerCase()] || [];
-      
-      if (categories.length === 0) {
-        return [];
+  static async getRecommendationsByMood(mood, userId, location = null) {
+    let recommendations = [];
+    const fsqCategories = moodToCategoryMap[mood.toLowerCase()] || [];
+
+    // Foursquare recommendations
+    if (fsqCategories.length > 0) {
+      const fsqParams = {
+        categories: fsqCategories.join(','),
+        sort: 'RATING', // Keep rating sort for Foursquare
+        limit: 10
+      };
+      if (location && location.latitude && location.longitude) {
+        fsqParams.ll = `${location.latitude},${location.longitude}`;
+        fsqParams.radius = 10000; // 10km radius for mood-based recommendations
       }
-      
-      // Llamar a la API con las categorías relacionadas al estado de ánimo
-      const response = await axios.get(`${FOURSQUARE_BASE_URL}/places/search`, {
-        headers: foursquareHeaders,
-        params: {
-          categories: categories.join(','),
-          sort: 'RATING',
-          limit: 10
+      try {
+        const response = await axios.get(`${FOURSQUARE_BASE_URL}/places/search`, {
+          headers: foursquareHeaders,
+          params: fsqParams
+        });
+        if (response.data && response.data.results) {
+          recommendations = recommendations.concat(this._formatPlacesResponse(response.data.results));
         }
-      });
-      
-      let recommendations = this._formatPlacesResponse(response.data.results);
+      } catch (error) {
+        console.error('Error fetching Foursquare recommendations:', error.response ? error.response.data : error.message);
+      }
+    }
+
+    // Geoapify recommendations
+    // Map Foursquare mood to Geoapify categories or use mood as search term
+    let geoapifySearchText = mood; // Default to mood as search text
+    let geoapifyCategories = [];
+
+    // Example: Simple mapping for "relaxed" mood, can be expanded
+    if (mood.toLowerCase() === 'relaxed') {
+      geoapifyCategories = ['leisure.park', 'natural.nature_reserve', 'amenity.cafe', 'tourism.attraction'];
+      geoapifySearchText = 'quiet places'; // More specific search text
+    } else if (mood.toLowerCase() === 'adventurous') {
+        geoapifyCategories = ['sport', 'natural', 'tourism.attraction', 'activity'];
+        geoapifySearchText = 'adventure activities';
+    } else if (mood.toLowerCase() === 'hungry') {
+        geoapifyCategories = ['catering.restaurant', 'catering.fast_food', 'catering.cafe', 'catering.food_court'];
+        geoapifySearchText = 'food';
+    } else if (mood.toLowerCase() === 'creative') {
+        geoapifyCategories = ['entertainment.culture', 'building.historic', 'tourism.artwork', 'education.library'];
+        geoapifySearchText = 'art gallery museum';
+    }
+    // Add more mappings as needed
+
+    if (location && location.latitude && location.longitude) {
+      try {
+        const geoapifyRecs = await GeoapifyService.searchPlaces(
+          geoapifySearchText,
+          location,
+          geoapifyCategories.length > 0 ? geoapifyCategories : ['tourism', 'entertainment', 'catering', 'leisure'] // Default broad if no specific mapping
+        );
+        if (geoapifyRecs && !geoapifyRecs.error) {
+          recommendations = recommendations.concat(geoapifyRecs);
+        } else if (geoapifyRecs && geoapifyRecs.error) {
+          console.error('Error fetching Geoapify recommendations:', geoapifyRecs.message);
+        }
+      } catch (error) {
+         console.error('Error calling GeoapifyService for recommendations:', error.message);
+      }
+    }
+
+    let uniqueRecommendations = this._deDuplicatePlaces(recommendations);
       
       // Añadir matchPercentage a cada recomendación
-      recommendations = recommendations.map(place => ({
+      uniqueRecommendations = uniqueRecommendations.map(place => ({
         ...place,
         matchPercentage: Math.floor(Math.random() * 20) + 80, // Simular porcentaje entre 80-100%
-        userFeedback: null
+        userFeedback: null // Initialize feedback
       }));
       
       // Recuperar feedback previo del usuario
@@ -95,7 +261,7 @@ class PlacesService {
         if (storedFeedback) {
           const feedbackData = JSON.parse(storedFeedback);
           
-          return recommendations.map(place => ({
+          uniqueRecommendations = uniqueRecommendations.map(place => ({
             ...place,
             userFeedback: feedbackData[place.id] || null
           }));
@@ -104,12 +270,16 @@ class PlacesService {
         console.error('Error retrieving feedback', err);
       }
       
-      return recommendations;
-    } catch (error) {
-      console.error('Error fetching recommendations:', error);
-      return [];
-    }
-  }
+      return uniqueRecommendations;
+    // } catch (error) { // This was the original end of the try block for getRecommendationsByMood
+    //   console.error('Error fetching recommendations:', error);
+    //   return [];
+    // }
+    // The try-catch for getRecommendationsByMood was implicitly closed by the previous SEARCH block end.
+    // For safety, explicitly ending the function here if the above was the intended scope.
+    // However, the original code structure implies the try-catch should wrap the feedback logic too.
+    // The following line was the original end of the function, assuming the try-catch is correctly scoped by the initial part of the function.
+  } // This closes getRecommendationsByMood. The try-catch is handled by the surrounding structure.
 
   // Proporcionar feedback sobre un lugar
   static async provideFeedback(placeId, userId, liked) {

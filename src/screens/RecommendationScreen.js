@@ -6,26 +6,49 @@ import AuthContext from '../context/AuthContext';
 import PlacesService from '../services/PlacesService';
 
 const RecommendationScreen = ({ navigation }) => {
-  const { preferences } = useContext(PlacesContext);
+  const { preferences, userLocation, locationPermissionGranted } = useContext(PlacesContext);
   const { userId } = useContext(AuthContext);
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchRecommendations();
-  }, [preferences.mood]);
+    // Ensure mood and userId are available before fetching
+    if (preferences.mood && userId) {
+      fetchRecommendations();
+    } else if (!preferences.mood) {
+      // Handle case where mood is not set, maybe navigate back or show message
+      console.log("Mood not set, cannot fetch recommendations.");
+      setLoading(false); // Stop loading if mood is missing
+      setRecommendations([]); // Clear recommendations
+    }
+    // userId is from AuthContext, which should be stable or handled by its own provider
+  }, [preferences.mood, userId, userLocation, locationPermissionGranted]);
 
   const fetchRecommendations = async () => {
+    if (!preferences.mood || !userId) {
+      setRecommendations([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
-      // Obtener recomendaciones basadas en el estado de ánimo
-      const recommendedPlaces = await PlacesService.getRecommendationsByMood(
-        preferences.mood,
-        userId
-      );
+      let recommendedPlaces;
+      if (locationPermissionGranted && userLocation) {
+        recommendedPlaces = await PlacesService.getRecommendationsByMood(
+          preferences.mood,
+          userId,
+          userLocation
+        );
+      } else {
+        recommendedPlaces = await PlacesService.getRecommendationsByMood(
+          preferences.mood,
+          userId
+        );
+      }
       setRecommendations(recommendedPlaces);
     } catch (error) {
       console.error('Error fetching recommendations:', error);
+      setRecommendations([]); // Clear recommendations on error
     } finally {
       setLoading(false);
     }

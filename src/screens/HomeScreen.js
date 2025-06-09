@@ -5,21 +5,29 @@ import PlacesContext from '../context/PlacesContext';
 import PlacesService from '../services/PlacesService';
 
 const HomeScreen = ({ navigation }) => {
-  const { places, setPlaces, preferences } = useContext(PlacesContext);
+  const { places, setPlaces, preferences, userLocation, locationPermissionGranted } = useContext(PlacesContext);
   const [search, setSearch] = React.useState('');
   const [loading, setLoading] = React.useState(false);
 
   useEffect(() => {
     fetchInitialPlaces();
-  }, []);
+  }, [userLocation, locationPermissionGranted]); // Refetch if location or permission changes
 
   const fetchInitialPlaces = async () => {
     setLoading(true);
     try {
-      const placesData = await PlacesService.getPopularPlaces();
+      let placesData;
+      if (locationPermissionGranted && userLocation) {
+        placesData = await PlacesService.getPopularPlaces(userLocation);
+      } else {
+        // Fetch general popular places if no permission or location
+        placesData = await PlacesService.getPopularPlaces();
+      }
       setPlaces(placesData);
     } catch (error) {
-      console.error('Error fetching places:', error);
+      console.error('Error fetching initial places:', error);
+      // Optionally set places to empty array or show error message
+      setPlaces([]);
     } finally {
       setLoading(false);
     }
@@ -29,10 +37,16 @@ const HomeScreen = ({ navigation }) => {
     if (search.trim()) {
       setLoading(true);
       try {
-        const searchResults = await PlacesService.searchPlaces(search);
+        let searchResults;
+        if (locationPermissionGranted && userLocation) {
+          searchResults = await PlacesService.searchPlaces(search, userLocation);
+        } else {
+          searchResults = await PlacesService.searchPlaces(search);
+        }
         setPlaces(searchResults);
       } catch (error) {
         console.error('Error searching places:', error);
+        setPlaces([]);
       } finally {
         setLoading(false);
       }
