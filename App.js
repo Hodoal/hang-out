@@ -5,12 +5,18 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MainNavigator from './src/navigation/MainNavigator';
 import AuthContext from './src/context/AuthContext';
-import { PlacesProvider } from './src/context/PlacesContext'; // Import PlacesProvider
+import PlacesContext from './src/context/PlacesContext';
 
 const Stack = createStackNavigator();
 
 export default function App() {
   const [userId, setUserId] = React.useState(null); // Elimina el tipo "string | null"
+  const [places, setPlaces] = React.useState([]); // No se especifica el tipo
+  const [preferences, setPreferences] = React.useState({
+    mood: null,
+    categories: [],
+    location: null,
+  });
 
   // Generar ID anónimo al iniciar la app si no existe
   React.useEffect(() => {
@@ -23,11 +29,18 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AuthContext.Provider value={{ userId, setUserId }}>
-        <PlacesProvider> {/* Use PlacesProvider */}
+        <PlacesContext.Provider
+          value={{
+            places,
+            setPlaces,
+            preferences,
+            setPreferences,
+          }}
+        >
           <NavigationContainer>
             <MainNavigator />
           </NavigationContainer>
-        </PlacesProvider>
+        </PlacesContext.Provider>
       </AuthContext.Provider>
     </SafeAreaProvider>
   );
