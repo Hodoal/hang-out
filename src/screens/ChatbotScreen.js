@@ -21,7 +21,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { LinearGradient } from 'expo-linear-gradient';
 
 // APIs Configuration
-const OPENROUTER_API_KEY ='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';
+const OPENROUTER_API_KEY ='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';
 const GOOGLE_MAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY'; // Reemplazar con tu API key
 const NLP_SERVER_URL = 'http://localhost:6000'; // Updated port for Flask NLP service
 const SITE_URL = 'barranquilla-guide.com';
@@ -301,7 +301,7 @@ Responde SOLO con JSON válido, sin texto adicional.`;
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'deepseek/deepseek-r1:free',
+            model: 'deepseek/deepseek-r1-0528-qwen3-8b:free',
             messages: [
               {
                 role: 'user',
